@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback} from 'react';
 import AuthContext from './AuthContext';
 import axios from 'axios';
 
-// API base URL
-const API_URL = '/api/auth';
+// API base URL - Fixed to use the correct port and path
+const API_URL = 'http://localhost:5000/api/auth';
 
 // Create the AuthProvider component
 const AuthProvider = ({ children }) => {
@@ -142,6 +142,7 @@ useEffect(() => {
     clearError();
     
     try {
+      // Fixed: Removed duplicated /auth/ in the path
       const response = await axios.post(`${API_URL}/login`, {
         email,
         password,
@@ -183,6 +184,7 @@ useEffect(() => {
     clearError();
     
     try {
+      // Fixed: Removed duplicated /auth/ in the path
       const response = await axios.post(`${API_URL}/register`, userData);
       return { success: true, data: response.data };
     } catch (err) {
