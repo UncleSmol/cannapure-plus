@@ -172,6 +172,7 @@
   margin-bottom: var(--space-4);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   width: 100%;
+
 }
 
 .lab-subtitle {
@@ -181,6 +182,7 @@
   text-align: left;
   margin-bottom: var(--space-2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  width: 100%;
 }
 
 .lab-description {
@@ -189,18 +191,17 @@
   margin-bottom: var(--space-4);
   font-size: var(--text-lg);
   max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+ 
 }
 
-/* Weekly Specials Section */
-.weekly_specials {
+/* Weekly specials_tag Section */
+.weekly_specials_tag {
   margin-bottom: var(--space-8);
   position: relative;
   overflow-y: hidden;
 }
 
-.weekly_specials .__content-wrapper {
+.weekly_specials_tag .__content-wrapper {
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -213,21 +214,21 @@
   scrollbar-color: var(--accent-green) var(--dark-green);
 }
 
-.weekly_specials .__content-wrapper::-webkit-scrollbar {
+.weekly_specials_tag .__content-wrapper::-webkit-scrollbar {
   height: 8px;
 }
 
-.weekly_specials .__content-wrapper::-webkit-scrollbar-track {
+.weekly_specials_tag .__content-wrapper::-webkit-scrollbar-track {
   background: var(--dark-green);
   border-radius: var(--radius-full);
 }
 
-.weekly_specials .__content-wrapper::-webkit-scrollbar-thumb {
+.weekly_specials_tag .__content-wrapper::-webkit-scrollbar-thumb {
   background-color: var(--accent-green);
   border-radius: var(--radius-full);
 }
 
-.weekly_specials .__content-wrapper .strain-card {
+.weekly_specials_tag .__content-wrapper .strain-card {
   flex: 0 0 auto;
   width: var(--card-width);
 }

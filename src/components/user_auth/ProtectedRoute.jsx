@@ -1,16 +1,16 @@
 import React from 'react';
-import useAuth from './useAuth';
+import { useAuth } from '../../context/AuthProvider';
 
 /**
- * ProtectedRoute component
- * Renders children only if user is authenticated
- * Redirects to login page otherwise
+ * Protected Route Component
+ * Only renders children if user is authenticated
+ * Otherwise redirects to login page
  */
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   
-  // Show loading state while authentication is being checked
-  if (isLoading) {
+  // Show loading state
+  if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
@@ -19,14 +19,14 @@ const ProtectedRoute = ({ children }) => {
     );
   }
   
-  // Redirect to login page if not authenticated
+  // If not authenticated, redirect to login page
   if (!isAuthenticated) {
-    // Use hash-based routing
-    window.location.hash = "userAuthenticationPage";
+    // Navigate to login page
+    window.location.hash = 'userAuthenticationPage';
     return null;
   }
   
-  // If authenticated, render the protected content
+  // If authenticated, render children
   return children;
 };
 

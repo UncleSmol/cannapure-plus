@@ -214,11 +214,24 @@
   height: 24px;
 }
 
-.mobile-nav__icon img {
+.mobile-nav__icon img:not(.auth-icon) {
   width: 100%;
   height: 100%;
   object-fit: contain;
   filter: brightness(0) invert(1); /* Make icons white */
+}
+
+/* Add this class to your authenticated icon */
+.auth-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* No filter applied, allowing original colors to show */
+}
+
+/* For SVG icons that need to be colored differently when authenticated */
+.auth-status-indicator.status-authenticated svg path {
+  fill: var(--accent-green); /* Use your accent color instead of white */
 }
 
 .mobile-nav__text {
@@ -277,6 +290,11 @@
 
 .logout-button:hover span {
   color: var(--accent-green);
+}
+
+.icon-button, .icon-button img{
+  background-color: transparent;
+  border: none;
 }
 
 /* Loading spinner for ProtectedRoute */

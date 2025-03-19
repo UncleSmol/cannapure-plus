@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { validateUserData } from "./validateUserData";
 import { gsap } from "gsap";
-import useAuth from "./useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import "./userauth.css";
 
 export default function UserAuth() {
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, loading, error, clearError } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -47,7 +47,10 @@ export default function UserAuth() {
   // Clear feedback when changing tabs
   useEffect(() => {
     setFeedbackMessage({ type: "", message: "" });
-  }, [activeTab]);
+    if (error) {
+      clearError();
+    }
+  }, [activeTab, error, clearError]);
 
   const animateError = (fieldName, show) => {
     const element = errorRefs.current[fieldName];
@@ -74,12 +77,22 @@ export default function UserAuth() {
   const handleLoginInputChange = (e) => {
     const { name, value } = e.target;
     setLoginData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear global error from auth context if present
+    if (error) {
+      clearError();
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
+    
+    // Clear global error from auth context if present
+    if (error) {
+      clearError();
+    }
   };
 
   const handleLoginSubmit = async (e) => {
@@ -88,7 +101,11 @@ export default function UserAuth() {
     setFeedbackMessage({ type: "", message: "" });
 
     try {
-      const result = await login(loginData.email, loginData.password, loginData.cpNumber);
+      const result = await login({
+        email: loginData.email,
+        password: loginData.password,
+        cpNumber: loginData.cpNumber || undefined
+      });
       
       if (!result.success) {
         setFeedbackMessage({ 
@@ -122,7 +139,18 @@ export default function UserAuth() {
     setFeedbackMessage({ type: "", message: "" });
     
     try {
-      const result = await register(userData);
+      // Transform userData to match the expected format
+      const registrationData = {
+        name: `${userData.firstName} ${userData.lastName}`,
+        email: userData.email,
+        password: userData.password,
+        phoneNumber: userData.phoneNumber,
+        idNumber: userData.idNumber,
+        address: userData.address,
+        cpNumber: userData.cpNumber || undefined
+      };
+      
+      const result = await register(registrationData);
       
       if (result.success) {
         setFeedbackMessage({
@@ -189,9 +217,9 @@ export default function UserAuth() {
         >
           <h1 className="auth-title">Member Login</h1>
           
-          {feedbackMessage.message && activeTab === "login" && (
-            <div className={`auth-feedback ${feedbackMessage.type}`}>
-              {feedbackMessage.message}
+          {(feedbackMessage.message || error) && activeTab === "login" && (
+            <div className={`auth-feedback ${feedbackMessage.type || "error"}`}>
+              {feedbackMessage.message || error}
             </div>
           )}
           
@@ -245,9 +273,9 @@ export default function UserAuth() {
             <button 
               type="submit" 
               className="btn btn-primary auth-btn"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}
             >
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting || loading ? "Logging in..." : "Login"}
             </button>
           </form>
           <div className="auth-links">
@@ -264,9 +292,9 @@ export default function UserAuth() {
         >
           <h1 className="auth-title">Member Registration</h1>
           
-          {feedbackMessage.message && activeTab === "register" && (
-            <div className={`auth-feedback ${feedbackMessage.type}`}>
-              {feedbackMessage.message}
+          {(feedbackMessage.message || error) && activeTab === "register" && (
+            <div className={`auth-feedback ${feedbackMessage.type || "error"}`}>
+              {feedbackMessage.message || error}
             </div>
           )}
           
@@ -428,9 +456,9 @@ export default function UserAuth() {
             <button 
               type="submit" 
               className="btn btn-primary auth-btn"
-              disabled={isSubmitting}
+              disabled={isSubmitting || loading}
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {isSubmitting || loading ? "Registering..." : "Register"}
             </button>
           </form>
         </div>

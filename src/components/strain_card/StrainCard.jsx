@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./StrainCard.css";
-import logoPlaceholder from "../../assets/images/cannipure-logo.png";
+import logoPlaceholder from "../../assets/images/cannapure-plus-logo.png";
 import { fetchAllStrains } from "./StrainDataService";
 
 const StrainCardList = () => {

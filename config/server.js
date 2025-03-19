@@ -1,234 +1,408 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require("dotenv").config();
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const db = require("./database");
+const apiRoutes = require('./api/routes/index'); // Use the index.js file with auth routes
+const responseMiddleware = require('./api/middleware/response');
 
-// Import authentication setup
-const setupAuth = require('./auth/auth.setup');
-// Import authentication routes
-const authRoutes = require('./auth/auth.routes');
+// Import Phase 3 caching services
+const cacheService = require('./api/services/cacheService');
+const cacheMonitoring = require('./api/services/cacheMonitoring');
+const backgroundRefresh = require('./api/services/backgroundRefresh');
+const { invalidateCache } = require('./api/middleware/cacheInvalidation');
 
+// Import cache dashboard routes
+const cacheDashboardRoutes = require('./api/routes/cache-dashboard.js');
+
+// Import authentication middleware
+const authMiddleware = require('./api/middleware/auth');
+
+// Initialize express app
 const app = express();
 
-// CORS configuration - Updated to include port 5000 as well
+// Environment variables
+const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: NODE_ENV === 'production' ? undefined : false,
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS configuration
 app.use(cors({
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5000', 'http://127.0.0.1:5000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Force-Refresh'],
+  exposedHeaders: ['X-API-Version', 'X-Response-Time', 'ETag', 'Last-Modified'],
+  credentials: true // Important for cookies
 }));
 
-// Request logging middleware - Add this BEFORE other middleware
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Cookie parsing middleware
+app.use(cookieParser());
+
+// Add cache monitoring response time middleware
+app.use(cacheMonitoring.createResponseTimeMiddleware());
+
+// Enhanced logging middleware with API-specific details
 app.use((req, res, next) => {
   const start = Date.now();
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Request received`);
-  console.log('Request headers:', JSON.stringify(req.headers));
+  const timestamp = new Date().toISOString();
   
-  // For POST requests, log the body
-  if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
-    const originalJson = res.json;
-    res.json = function(body) {
-      console.log(`[${new Date().toISOString()}] Response for ${req.method} ${req.url}:`, 
-        JSON.stringify(body).substring(0, 200) + (JSON.stringify(body).length > 200 ? '...' : ''));
-      return originalJson.call(this, body);
-    };
+  // Log request details
+  console.log(`\n[${timestamp}] 🔄 ${req.method} ${req.url}`);
+  
+  // Log request body if present (but mask sensitive data)
+  if (req.body && Object.keys(req.body).length > 0) {
+    const sanitizedBody = { ...req.body };
+    
+    // Mask sensitive fields
+    if (sanitizedBody.password) sanitizedBody.password = '********';
+    if (sanitizedBody.currentPassword) sanitizedBody.currentPassword = '********';
+    if (sanitizedBody.newPassword) sanitizedBody.newPassword = '********';
+    if (sanitizedBody.confirmPassword) sanitizedBody.confirmPassword = '********';
+    
+    console.log(`[REQUEST BODY] ${JSON.stringify(sanitizedBody, null, 2)}`);
   }
   
-  // Log response status when request completes
+  // Log query parameters if present
+  if (req.query && Object.keys(req.query).length > 0) {
+    console.log(`[REQUEST QUERY] ${JSON.stringify(req.query, null, 2)}`);
+  }
+  
+  // Add response logging after request is complete
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Response: ${res.statusCode} (${duration}ms)`);
+    const statusCode = res.statusCode;
+    let logSymbol = '✅';
+    
+    // Use different symbols based on status code
+    if (statusCode >= 400 && statusCode < 500) logSymbol = '⚠️';
+    if (statusCode >= 500) logSymbol = '❌';
+    
+    // Special formatting for API routes
+    if (req.url.startsWith('/api/')) {
+      console.log(`[${timestamp}] ${logSymbol} API ${req.method} ${req.url} - Status: ${statusCode} - ${duration}ms`);
+      
+      // Log additional details for API requests
+      const apiPath = req.url.split('?')[0]; // Remove query params
+      const apiModule = apiPath.split('/')[2]; // Extract API module name
+      
+      if (apiModule) {
+        console.log(`[${timestamp}] 📊 API Module: ${apiModule} - Operation completed in ${duration}ms`);
+      }
+    } else {
+      console.log(`[${timestamp}] ${logSymbol} ${req.method} ${req.url} - Status: ${statusCode} - ${duration}ms`);
+    }
   });
   
   next();
 });
 
-// Middleware
-app.use(express.json());
+// Add forced refresh capability
+app.use(responseMiddleware.allowForcedRefresh());
 
-// Setup authentication system (includes Helmet and Passport)
-setupAuth(app);
+// Handle conditional requests
+app.use(responseMiddleware.handleConditionalRequests());
 
-// Register authentication routes
-app.use('/api/auth', authRoutes);
+// Add cache headers to responses
+app.use(responseMiddleware.addCacheHeaders({
+  maxAge: process.env.API_CACHE_MAX_AGE || 300, // 5 minutes default
+  includeETag: true,
+  varyByQueryParams: true,
+  varyByAccept: true,
+  publicCache: process.env.NODE_ENV === 'production' // Public cache in production only
+}));
 
-// Import authentication middleware
-const { isAuthenticated } = require('./auth/middleware/auth.middleware');
+// API routes
+app.use('/api', apiRoutes);
 
-// Log all registered routes
-console.log('=== REGISTERED ROUTES ===');
-console.log('/api/auth/* routes:');
-authRoutes.stack.forEach(r => {
-  if (r.route && r.route.path) {
-    console.log(`  ${Object.keys(r.route.methods).join(', ').toUpperCase()} /api/auth${r.route.path}`);
-  }
-});
+// Cache dashboard routes (admin only)
+app.use('/api/cache', 
+  authMiddleware.verifyToken, 
+  authMiddleware.requireRole('admin'), 
+  cacheDashboardRoutes
+);
 
-// Error handler middleware
-app.use((err, req, res, next) => {
-  console.error(`[${new Date().toISOString()}] Server error:`, err.stack);
-  res.status(500).json({ error: 'An internal server error occurred' });
-});
-
-// Public routes
-app.get("/api/test", async (req, res) => {
-  try {
-    db.query("SELECT 'Server is Running' AS message", (err, results) => {
-      if (err) {
-        console.error('Database test error:', err);
-        return res.status(500).json({ error: err.message });
-      }
-      res.json(results);
-    });
-  } catch (error) {
-    console.error('Test route error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Protected routes - require authentication
-app.get('/api/all-strains', isAuthenticated, (req, res) => {
-    // Sanitize response immediately on error
-    const handleError = (err) => {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Failed to fetch strains' });
-    };
-    
-    const query = `
-        SELECT id, 'weekly_special' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM weekly_specials
-        UNION ALL
-        SELECT id, 'normal' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM normal_strains
-        UNION ALL
-        SELECT id, 'greenhouse' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM greenhouse_strains
-        UNION ALL
-        SELECT id, 'indoor' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM indoor_strains
-        UNION ALL
-        SELECT id, 'exotic' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM exotic_tunnel_strains
-        UNION ALL
-        SELECT id, 'medical' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM medical_strains
-        UNION ALL
-        SELECT id, 'prerolled' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM pre_rolled
-        UNION ALL
-        SELECT id, 'extracts' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM extracts_vapes
-        UNION ALL
-        SELECT id, 'edibles' as category, strain_name, strain_type, price, measurement, description, image_url, store_location, thc, specials_tag 
-        FROM edibles
-    `;
-
-    // Make sure we don't try to process a null DB connection
-    if (!db || typeof db.query !== 'function') {
-        return handleError(new Error('Database connection not available'));
-    }
-
-    try {
-        db.query(query, (err, results) => {
-            if (err) {
-                return handleError(err);
-            }
-            
-            // Convert MySQL boolean values to JavaScript booleans
-            const processedResults = results.map(item => ({
-                ...item,
-                // Convert MySQL tinyint(1) to JavaScript boolean
-                specials_tag: item.specials_tag === 1 || item.specials_tag === true
-            }));
-            
-            // Log the first few results for debugging
-            console.log('Strains fetched, sample:', JSON.stringify(processedResults.slice(0, 2)));
-            
-            // Set proper content type and send the JSON response
-            res.setHeader('Content-Type', 'application/json');
-            res.json(processedResults);
-        });
-    } catch (error) {
-        handleError(error);
-    }
-});
-
-
-
-// Placeholder for membership routes
-app.get('/api/membership', isAuthenticated, (req, res) => {
-  // The user object is available in req.user thanks to the isAuthenticated middleware
-  res.json({
-    message: 'Membership data accessed successfully',
-    user: {
-      id: req.user.id,
-      firstName: req.user.first_name,
-      membership: req.user.membership_tier
-    }
-  });
-});
-
-// Add a route to check API health and configuration
+// Health check endpoint with enhanced cache information
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    serverPort: process.env.PORT || 5000,
-    apiRoutes: {
-      auth: {
-        register: '/api/auth/register',
-        login: '/api/auth/login'
-      },
-      data: {
-        strains: '/api/all-strains',
-        membership: '/api/membership'
+  // Get cache statistics
+  const cacheStats = cacheService.getStats();
+  const monitoringStats = cacheMonitoring.getMonitoringStats({ includeHistory: false });
+  const backgroundJobs = backgroundRefresh.getJobStatus();
+  
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: NODE_ENV,
+    database: db.pool ? 'connected' : 'disconnected',
+    cache: {
+      enabled: true,
+      maxAge: process.env.API_CACHE_MAX_AGE || 300,
+      stats: cacheStats,
+      issues: monitoringStats.issues,
+      backgroundJobs: {
+        count: backgroundJobs.length,
+        active: backgroundJobs.filter(job => job.active).length
+      }
+    },
+    auth: {
+      enabled: true,
+      jwtEnabled: !!process.env.JWT_SECRET,
+      cookiesEnabled: process.env.USE_COOKIE_FOR_REFRESH === 'true',
+      protectedRoutes: ['/api/budbar', '/api/membership', '/api/admin', '/api/cache']
+    },
+    dataFreshness: {
+      phase1: 'implemented',
+      phase2: 'implemented',
+      phase3: 'implemented',
+      features: {
+        cacheHeaders: true,
+        conditionalRequests: true,
+        versionInformation: true,
+        forcedRefresh: true,
+        backgroundRefresh: true,
+        cacheMonitoring: true,
+        cacheDashboard: true
       }
     }
   });
 });
 
-// Add a direct test route for auth endpoints
-app.post('/api/direct-register-test', (req, res) => {
-  console.log('Direct register test hit with body:', req.body);
-  res.json({ 
-    message: 'Direct register test successful',
-    receivedData: req.body
-  });
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.status(200).json({ message: 'API is working!' });
 });
 
-// Serve static files from the build directory (one level up from config)
+// Serve static files from the build directory
 app.use(express.static(path.join(__dirname, '..', 'build')));
 
-// 404 handler - Add this BEFORE the catch-all route
-app.use('/api/*', (req, res, next) => {
-  console.error(`[${new Date().toISOString()}] 404 NOT FOUND: ${req.method} ${req.url}`);
-  res.status(404).json({ 
-    error: 'API endpoint not found',
-    requestedUrl: req.url,
-    availableEndpoints: {
-      auth: ['/api/auth/register', '/api/auth/login'],
-      public: ['/api/test', '/api/health'],
-      protected: ['/api/all-strains', '/api/membership']
+// Catch-all route to serve the React app - This should be AFTER all API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.error(`\n[${timestamp}] ❌ Server error:`, err);
+  
+  // Log stack trace in development
+  if (NODE_ENV !== 'production' && err.stack) {
+    console.error(`[STACK TRACE] ${err.stack}`);
+  }
+  
+  // Handle JWT errors specifically
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      error: {
+        message: 'Invalid token',
+        code: 'INVALID_TOKEN',
+        timestamp: timestamp
+      }
+    });
+  }
+  
+  // Handle token expiration
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      error: {
+        message: 'Token expired',
+        code: 'TOKEN_EXPIRED',
+        timestamp: timestamp
+      }
+    });
+  }
+  
+  res.status(err.status || 500).json({
+    error: {
+      message: NODE_ENV === 'production' 
+        ? 'An error occurred' 
+        : err.message || 'An internal server error occurred',
+      code: err.code || 'SERVER_ERROR',
+      timestamp: timestamp
     }
   });
 });
 
-// Important: This catch-all route should come AFTER all API routes
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+/**
+ * Verify authentication configuration
+ */
+function verifyAuthConfig() {
+  console.log('\n=== VERIFYING AUTHENTICATION CONFIGURATION ===');
+  
+  // Check JWT secret
+  if (!process.env.JWT_SECRET) {
+    console.warn('⚠️ JWT_SECRET is not set. Using a default secret for development.');
+    process.env.JWT_SECRET = 'default-dev-secret-do-not-use-in-production';
+  } else {
+    console.log('✅ JWT_SECRET is configured');
+  }
+  
+  // Check refresh token secret
+  if (!process.env.REFRESH_TOKEN_SECRET) {
+    console.warn('⚠️ REFRESH_TOKEN_SECRET is not set. Using JWT_SECRET as fallback.');
+    process.env.REFRESH_TOKEN_SECRET = process.env.JWT_SECRET;
+  } else {
+    console.log('✅ REFRESH_TOKEN_SECRET is configured');
+  }
+  
+  // Check token expiry
+  if (!process.env.JWT_EXPIRY) {
+    console.warn('⚠️ JWT_EXPIRY is not set. Using default of 1 hour.');
+    process.env.JWT_EXPIRY = '1h';
+  } else {
+    console.log(`✅ JWT_EXPIRY is set to ${process.env.JWT_EXPIRY}`);
+  }
+  
+  // Check refresh token expiry
+  if (!process.env.REFRESH_TOKEN_EXPIRY) {
+    console.warn('⚠️ REFRESH_TOKEN_EXPIRY is not set. Using default of 7 days.');
+    process.env.REFRESH_TOKEN_EXPIRY = '7d';
+  } else {
+    console.log(`✅ REFRESH_TOKEN_EXPIRY is set to ${process.env.REFRESH_TOKEN_EXPIRY}`);
+  }
+  
+  // Check cookie usage
+  if (process.env.USE_COOKIE_FOR_REFRESH === 'true') {
+    console.log('✅ Using HTTP-only cookies for refresh tokens');
+  } else {
+    console.log('ℹ️ Using Authorization header for refresh tokens');
+  }
+  
+  console.log('Authentication configuration verified');
+}
+
+/**
+ * Initialize Phase 3 caching components
+ */
+async function initCachingComponents() {
+  try {
+    console.log('\n=== INITIALIZING PHASE 3 CACHING ===');
+    
+    // Initialize background refresh service
+    await backgroundRefresh.init();
+    
+    // Pre-warm cache for critical endpoints
+    await backgroundRefresh.prewarmCache();
+    
+    console.log('Phase 3 caching initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Phase 3 caching:', error);
+  }
+}
+
+/**
+ * Graceful shutdown handler
+ */
+async function gracefulShutdown(signal) {
+  console.log(`\n=== GRACEFUL SHUTDOWN (${signal}) ===`);
+  
+  try {
+    // Export cache statistics before shutdown
+    if (process.env.CACHE_EXPORT_ON_SHUTDOWN !== 'false') {
+      console.log('Exporting cache statistics...');
+      await cacheMonitoring.exportStats(
+        path.join(__dirname, '..', 'logs', `cache-stats-shutdown-${Date.now()}.json`)
+      );
+    }
+    
+    // Stop background refresh jobs
+    console.log('Stopping background refresh jobs...');
+    backgroundRefresh.stopAllJobs();
+    
+    // Close database connection
+    console.log('Closing database connection...');
+    if (db.pool) {
+      await db.pool.end();
+    }
+    
+    console.log('Shutdown complete');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+}
+
+// Setup graceful shutdown handlers
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Start the server
+app.listen(PORT, async () => {
+  console.log(`\n=== SERVER STARTED ===`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${NODE_ENV}`);
+  console.log(`Database connection: ${db.pool ? 'established' : 'not connected'}`);
+  console.log(`Cache enabled: yes (default TTL: ${process.env.API_CACHE_MAX_AGE || 300}s)`);
+  
+  // Verify authentication configuration
+  verifyAuthConfig();
+  
+  // Initialize Phase 3 caching components
+  await initCachingComponents();
+  
+  console.log(`\n=== API ENDPOINTS ===`);
+  console.log(`Base API URL: http://localhost:${PORT}/api`);
+  
+  console.log(`\n=== AUTHENTICATION ENDPOINTS ===`);
+  console.log(`Register: http://localhost:${PORT}/api/auth/register`);
+  console.log(`Login: http://localhost:${PORT}/api/auth/login`);
+  console.log(`Refresh Token: http://localhost:${PORT}/api/auth/refresh`);
+  console.log(`Logout: http://localhost:${PORT}/api/auth/logout`);
+  console.log(`Profile: http://localhost:${PORT}/api/auth/profile`);
+  
+  console.log(`\n=== PROTECTED ENDPOINTS ===`);
+  console.log(`BudBar: http://localhost:${PORT}/api/budbar`);
+  console.log(`Membership: http://localhost:${PORT}/api/membership`);
+  console.log(`Admin: http://localhost:${PORT}/api/admin`);
+  
+  console.log(`\n=== UTILITY ENDPOINTS ===`);
+  console.log(`Test endpoint: http://localhost:${PORT}/api/test`);
+  console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Cache dashboard: http://localhost:${PORT}/api/cache/stats`);
+  
+  console.log(`\n=== CACHE CONTROL ===`);
+  console.log(`Force refresh: Add ?forceRefresh=true to any request`);
+  
+  // Log available API routes if they exist
+  try {
+    const apiRouter = express.Router();
+    const routes = apiRouter.stack || [];
+    if (routes.length > 0) {
+      console.log(`\n=== AVAILABLE ROUTES ===`);
+      routes.forEach(route => {
+        if (route.route) {
+          const path = route.route.path;
+          const methods = Object.keys(route.route.methods).join(', ').toUpperCase();
+          console.log(`${methods}: http://localhost:${PORT}/api${path}`);
+        }
+      });
+    }
+  } catch (err) {
+    console.log(`\n=== ROUTES INFO UNAVAILABLE ===`);
+  }
+  
+  // Log cache statistics periodically
+  setInterval(() => {
+    const stats = cacheService.getStats();
+    console.log(`\n=== CACHE STATISTICS ===`);
+    console.log(`Keys: ${stats.keys}`);
+    console.log(`Hit ratio: ${(stats.hitRatio * 100).toFixed(2)}%`);
+    console.log(`Hits: ${stats.hits}, Misses: ${stats.misses}`);
+    console.log(`Background jobs: ${backgroundRefresh.getJobStatus().length}`);
+  }, process.env.CACHE_STATS_LOG_INTERVAL || 300000); // 5 minutes
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`\n=== SERVER STARTED ===`);
-    console.log(`Authentication system initialized`);
-    console.log(`Server running on port ${PORT}`);
-    console.log(`\n=== API ENDPOINTS ===`);
-    console.log(`- Authentication: http://localhost:${PORT}/api/auth/*`);
-    console.log(`- Health check: http://localhost:${PORT}/api/health`);
-    console.log(`- Strains data: http://localhost:${PORT}/api/all-strains`);
-    console.log(`\n=== ENVIRONMENT ===`);
-    console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-    console.log(`API URL: ${process.env.REACT_APP_API_URL || 'Not set'}`);
-    console.log(`\n=== READY ===`);
-});
+module.exports = app;

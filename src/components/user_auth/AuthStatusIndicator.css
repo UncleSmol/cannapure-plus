@@ -1,0 +1,42 @@
+.auth-status-indicator {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Status indicator dot using ::before pseudo-element */
+.auth-status-indicator::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+/* Red dot for unauthenticated state */
+.auth-status-indicator.status-unauthenticated::before {
+  background-color: #ff3b30;
+}
+
+/* Green dot for authenticated state */
+.auth-status-indicator.status-authenticated::before {
+  background-color: #34c759;
+}
+
+/* Yellow dot for loading state */
+.auth-status-indicator.status-loading::before {
+  background-color: #ffcc00;
+}
+
+/* Optional: Pulsing animation for loading state */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.auth-status-indicator.status-loading::before {
+  animation: pulse 1.5s infinite ease-in-out;
+}

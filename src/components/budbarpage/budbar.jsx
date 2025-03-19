@@ -52,7 +52,7 @@ const strainCategories = [
 export default function BudBarPage() {
   const pageRef = useRef(null);
   const titleRef = useRef(null);
-  const specialsRef = useRef(null);
+  const specials_tagRef = useRef(null);
   const categoriesRef = useRef([]);
   
   const [strainData, setStrainData] = useState({});
@@ -139,51 +139,51 @@ export default function BudBarPage() {
     return categoryStrains;
   };
 
-  // Function for weekly specials
-  const getWeeklySpecials = (allStrains, store) => {
+  // Function for weekly specials_tag
+  const getWeeklyspecials_tag = (allStrains, store) => {
     // Return placeholder data if needed
     const placeholderData = getPlaceholderData('weekly', store);
     if (placeholderData) return placeholderData;
 
-    const cachedKey = `weeklySpecials-${store}`;
-    const cachedSpecials = localStorage.getItem(cachedKey);
+    const cachedKey = `weeklyspecials_tag-${store}`;
+    const cachedspecials_tag = localStorage.getItem(cachedKey);
     const lastUpdate = localStorage.getItem(`${cachedKey}-timestamp`);
     const now = Date.now();
     const ONE_DAY = 24 * 60 * 60 * 1000;
 
-    if (cachedSpecials && lastUpdate && (now - parseInt(lastUpdate) < ONE_DAY)) {
-      return JSON.parse(cachedSpecials);
+    if (cachedspecials_tag && lastUpdate && (now - parseInt(lastUpdate) < ONE_DAY)) {
+      return JSON.parse(cachedspecials_tag);
     }
 
-    // Get tagged specials for selected store
-    const taggedSpecials = Object.values(allStrains)
+    // Get tagged specials_tag for selected store
+    const taggedspecials_tag = Object.values(allStrains)
       .flat()
       .filter(strain => 
-        strain?.specials_tag === true && 
+        strain?.special === true && 
         strain.store_location && strain.store_location.toUpperCase().includes(store)
       );
 
     // Get random strains for selected store
-    const randomSpecials = Object.entries(allStrains)
-      .filter(([key]) => key !== 'weekly_specials')
+    const randomspecials_tag = Object.entries(allStrains)
+      .filter(([key]) => key !== 'weekly_specials_tag')
       .flatMap(([_, strains]) => {
         return strains
           ?.filter(strain => 
             strain.store_location && strain.store_location.toUpperCase().includes(store) && 
-            !strain.specials_tag
+            !strain.special
           )
           ?.sort(() => Math.random() - 0.5)
           ?.slice(0, 3) || [];
       });
 
-    // Combine with tagged specials first, then random selections
-    const newSpecials = [...taggedSpecials, ...randomSpecials];
+    // Combine with tagged specials_tag first, then random selections
+    const newspecials_tag = [...taggedspecials_tag, ...randomspecials_tag];
 
     // Cache with store-specific key
-    localStorage.setItem(cachedKey, JSON.stringify(newSpecials));
+    localStorage.setItem(cachedKey, JSON.stringify(newspecials_tag));
     localStorage.setItem(`${cachedKey}-timestamp`, now.toString());
 
-    return newSpecials;
+    return newspecials_tag;
   };
 
   useEffect(() => {
@@ -200,7 +200,7 @@ export default function BudBarPage() {
     );
 
     gsap.fromTo(
-      specialsRef.current,
+      specials_tagRef.current,
       { opacity: 0, y: 20 },
       { opacity: 1, y: 0, duration: 0.6, delay: 0.3, ease: "power2.out" }
     );
@@ -224,15 +224,13 @@ export default function BudBarPage() {
       <StoreFilter onFilterChange={handleStoreFilter} />
       <div className="bud-bar-page__content">
         <h1 className="lab-title" ref={titleRef}>THE BUD BAR</h1>
-        
-        <p className="lab-subtitle">WEEKLY SPECIALS</p>
         <p className="lab-description">
           Check out what is hot on the shelves this week!
         </p>
 
-        <div className="weekly_specials" id="weeklySpecialsWrapper" ref={specialsRef}>
+        <div className="weekly_specials_tag" id="weeklyspecials_tagWrapper" ref={specials_tagRef}>
           <div className="__content-wrapper">
-            {getWeeklySpecials(strainData, selectedStore)?.map((strain, index) => (
+            {getWeeklyspecials_tag(strainData, selectedStore)?.map((strain, index) => (
               <StrainCard
                 key={`weekly-${strain.id}-${index}`}
                 id={strain.id}
@@ -242,7 +240,7 @@ export default function BudBarPage() {
                 thc={strain.thc}
                 price={strain.price}
                 description={strain.description}
-                isSpecial={strain.specials_tag}
+                isSpecial={strain.special}
               />
             ))}
           </div>
@@ -281,7 +279,7 @@ export default function BudBarPage() {
                     thc={strain.thc}
                     price={strain.price}
                     description={strain.description}
-                    isSpecial={strain.specials_tag}
+                    isSpecial={strain.special}
                   />
                 ))}
               </div>

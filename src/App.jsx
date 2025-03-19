@@ -10,8 +10,8 @@ import TalkToUs from "./components/talk_to_uspage/talktous";
 import Error404 from "./components/error_404page/error404";
 import UserAuth from "./components/user_auth/userauth";
 import ProtectedRoute from "./components/user_auth/ProtectedRoute";
-// Import the AuthProvider
-import AuthProvider from "./components/user_auth/AuthProvider";
+// Import the AuthProvider from context directory (the consolidated provider)
+import { AuthProvider } from "./context/AuthProvider";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("homePage");

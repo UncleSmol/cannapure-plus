@@ -142,31 +142,34 @@ useEffect(() => {
     clearError();
     
     try {
-      // Fixed: Removed duplicated /auth/ in the path
       const response = await axios.post(`${API_URL}/login`, {
         email,
         password,
         cpNumber
       });
       
-      const { user, tokens } = response.data;
+      // Handle the backend response format
+      const userData = response.data.data.user;
+      const accessToken = response.data.data.accessToken;
+      const refreshTokenValue = response.data.data.refreshToken;
       
       // Store user data and tokens
-      setUser(user);
-      setAccessToken(tokens.accessToken);
-      setRefreshToken(tokens.refreshToken);
+      setUser(userData);
+      setAccessToken(accessToken);
+      setRefreshToken(refreshTokenValue);
       setIsAuthenticated(true);
       
       // Save to local storage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('accessToken', tokens.accessToken);
-      localStorage.setItem('refreshToken', tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshTokenValue);
       
       // Set default Authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.accessToken}`;
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       
-      return { success: true, user };
+      return { success: true, user: userData };
     } catch (err) {
+      console.error('Login error:', err);
       const errorMessage = err.response?.data?.error || 'Login failed. Please try again.';
       setError(errorMessage);
       return { success: false, error: errorMessage };

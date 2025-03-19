@@ -144,13 +144,13 @@
     line-height: 1.3;
 }
 
-#weeklySpecialsWrapper{
+#weeklyspecials_tagWrapper{
     overflow-y: hidden;
     margin-bottom: 20px;
     position:relative;
 }
 
-#weeklySpecialsWrapper::before{
+#weeklyspecials_tagWrapper::before{
     content: '';
     position: absolute;
     top: 0;

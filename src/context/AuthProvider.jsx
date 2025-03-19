@@ -1,5 +1,6 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { authService } from '../services/api.service';
+import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import authService from '../services/AuthService';
+import { apiService } from '../services/api.service';
 
 export const AuthContext = createContext();
 
@@ -9,13 +10,47 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState(null);
 
+  /**
+   * Get user profile
+   * @returns {Promise<Object>} User profile
+   */
+  const getProfile = useCallback(async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      // Use the API service to get profile
+      const response = await apiService.getProfile();
+
+      // Update user state with profile data
+      if (response.user) {
+        setUser(response.user);
+        localStorage.setItem('userData', JSON.stringify(response.user));
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Get profile failed:', error);
+      
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else {
+        setError(error.message || 'Failed to get profile');
+      }
+      
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Check for existing auth on mount and test API connection
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         // First, test API connection to make sure we're using the right port
         try {
-          const healthCheck = await authService.testConnection();
+          const healthCheck = await apiService.testConnection();
           console.log('API health check successful:', healthCheck);
           setApiStatus({
             connected: true,
@@ -34,16 +69,30 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         
         if (token) {
-          // Validate token or get user data
-          // This would typically call an endpoint like /auth/me or use the token to get user data
+          // Check if token is expired
+          // In a real implementation, you would validate the token here
           // For now, we'll just set the user from localStorage if available
           const userData = JSON.parse(localStorage.getItem('userData') || '{}');
           if (userData.id) {
             setUser(userData);
+          } else {
+            // If we have a token but no user data, try to fetch user profile
+            try {
+              const profile = await getProfile();
+              if (profile && profile.data && profile.data.user) {
+                setUser(profile.data.user);
+              }
+            } catch (profileError) {
+              console.error('Failed to fetch user profile:', profileError);
+              // Clear invalid auth data
+              localStorage.removeItem('token');
+              localStorage.removeItem('userData');
+            }
           }
         }
       } catch (err) {
         console.error('Auth status check failed:', err);
+        setError(err.message || 'Authentication initialization failed');
         // Clear potentially invalid auth data
         localStorage.removeItem('token');
         localStorage.removeItem('userData');
@@ -53,13 +102,34 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, [getProfile]);
 
-  const login = async (credentials) => {
-    setLoading(true);
-    setError(null);
-    
+  // Set up token refresh interval if needed in the future
+  useEffect(() => {
+    // Only set up refresh interval if user is logged in
+    if (!user) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // This is where you would implement token refresh logic
+    // For example, checking token expiration and refreshing when needed
+
+    return () => {
+      // Clean up any intervals or timers here
+    };
+  }, [user]);
+
+  /**
+   * Login user with email and password
+   * @param {Object} credentials - User credentials
+   * @returns {Promise<Object>} Login result
+   */
+  const login = useCallback(async (credentials) => {
     try {
+      setError(null);
+      setLoading(true);
+
       const response = await authService.login(credentials);
       
       // Store token and user data
@@ -69,18 +139,31 @@ export const AuthProvider = ({ children }) => {
       setUser(response.user);
       return response;
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      console.error('Login failed:', err);
+      
+      // Set user-friendly error message
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError(err.message || 'Login failed');
+      }
+      
       throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const register = async (userData) => {
-    setLoading(true);
-    setError(null);
-    
+  /**
+   * Register a new user
+   * @param {Object} userData - User registration data
+   * @returns {Promise<Object>} Registration result
+   */
+  const register = useCallback(async (userData) => {
     try {
+      setError(null);
+      setLoading(true);
+      
       console.log('AuthProvider: Registering user with data:', { ...userData, password: '********' });
       const response = await authService.register(userData);
       console.log('AuthProvider: Registration response:', response);
@@ -95,17 +178,28 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (err) {
       console.error('AuthProvider: Registration error:', err);
-      setError(err.response?.data?.error || 'Registration failed');
+      
+      // Set user-friendly error message
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError(err.message || 'Registration failed');
+      }
+      
       throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = async () => {
-    setLoading(true);
-    
+  /**
+   * Logout user
+   * @returns {Promise<void>}
+   */
+  const logout = useCallback(async () => {
     try {
+      setLoading(true);
+      
       // Call logout API
       await authService.logout();
     } catch (err) {
@@ -117,7 +211,49 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setLoading(false);
     }
-  };
+  }, []);
+
+  /**
+   * Update user profile
+   * @param {Object} userData - User data to update
+   * @returns {Promise<Object>} Updated profile
+   */
+  const updateProfile = useCallback(async (userData) => {
+    try {
+      setError(null);
+  setLoading(true);
+
+      // Use the API service to update profile
+      const response = await apiService.updateProfile(userData);
+
+      // Update user state with updated profile data
+      if (response.user) {
+        setUser(response.user);
+        localStorage.setItem('userData', JSON.stringify(response.user));
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Update profile failed:', error);
+      
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else {
+        setError(error.message || 'Failed to update profile');
+      }
+      
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /**
+   * Clear authentication error
+   */
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   const value = {
     user,
@@ -127,8 +263,20 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    getProfile,
+    updateProfile,
+    clearError,
     isAuthenticated: !!user
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

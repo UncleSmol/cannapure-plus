@@ -51,12 +51,12 @@ const Header = ({ currentPage }) => {
     isAuthenticated
       ? {
           name: "LOGOUT",
-          icon: "https://www.svgrepo.com/show/535459/key.svg",
+          icon: "https://www.svgrepo.com/show/535364/door-open.svg",
           action: handleLogout,
         }
       : {
           name: "LOGIN/REGISTER",
-          icon: "https://www.svgrepo.com/show/535459/key.svg",
+          icon: "https://www.svgrepo.com/show/535362/door.svg",
           link: "#userAuthenticationPage",
         },
   ];

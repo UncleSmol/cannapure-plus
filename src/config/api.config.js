@@ -1,36 +1,34 @@
-// Explicitly set the API base URL to port 5000
-const API_BASE_URL = 'http://localhost:5000/api';
+/**
+ * API Configuration
+ * Centralized configuration for API endpoints
+ */
 
-// Log the API base URL to verify it's correct
-console.log('API Config initialized with base URL:', API_BASE_URL);
+// Determine the base URL based on environment
+const getBaseUrl = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:5000';
+  }
+  
+  return process.env.REACT_APP_API_URL || 'https://www.cannapureplus.co.za';
+};
+
+const BASE_URL = getBaseUrl();
+
+console.log(`API configured with base URL: ${BASE_URL}`);
 
 const apiConfig = {
+  baseUrl: BASE_URL,
+  
   // Auth endpoints
   auth: {
-    login: `${API_BASE_URL}/auth/login`,
-    register: `${API_BASE_URL}/auth/register`,
-    logout: `${API_BASE_URL}/auth/logout`,
-    refresh: `${API_BASE_URL}/auth/refresh-token`
+    login: `${BASE_URL}/api/auth/login`,
+    register: `${BASE_URL}/api/auth/register`,
+    logout: `${BASE_URL}/api/auth/logout`,
+    refresh: `${BASE_URL}/api/auth/refresh`,
+    profile: `${BASE_URL}/api/auth/profile`
   },
   
-  // User endpoints
-  user: {
-    profile: `${API_BASE_URL}/user/profile`,
-    update: `${API_BASE_URL}/user/update`
-  },
-  
-  // Strain data endpoints
-  strains: {
-    all: `${API_BASE_URL}/all-strains`
-  },
-  
-  // Membership endpoints
-  membership: {
-    data: `${API_BASE_URL}/membership`
-  },
-  
-  // Health check
-  health: `${API_BASE_URL}/health`
+  // Other API endpoints can be added here
 };
 
 export default apiConfig;
