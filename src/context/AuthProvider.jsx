@@ -130,25 +130,35 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       setLoading(true);
 
-      const response = await authService.login(credentials);
+      console.log('AuthProvider: Attempting login with credentials:', {
+        ...credentials, 
+        password: credentials.password ? '********' : undefined
+      });
+
+      const response = await authService.login(credentials.email, credentials.password);
+      console.log('AuthProvider: Login successful, response:', response);
       
-      // Store token and user data
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userData', JSON.stringify(response.user));
+      // Store token and user data - adjust based on your API response structure
+      const token = response.data?.accessToken || response.accessToken || response.token;
+      const userData = response.data?.user || response.user;
       
-      setUser(response.user);
-      return response;
-    } catch (err) {
-      console.error('Login failed:', err);
-      
-      // Set user-friendly error message
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else {
-        setError(err.message || 'Login failed');
+      if (token) {
+        localStorage.setItem('token', token);
       }
       
-      throw err;
+      if (userData) {
+        localStorage.setItem('userData', JSON.stringify(userData));
+        setUser(userData);
+      }
+      
+      return response;
+    } catch (err) {
+      console.error('Login failed:', err.message);
+      
+      // Set user-friendly error message
+      setError(err.message || 'Login failed');
+      
+      throw new Error(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -164,29 +174,45 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       setLoading(true);
       
-      console.log('AuthProvider: Registering user with data:', { ...userData, password: '********' });
+      console.log('AuthProvider: Registering user with data:', { 
+        ...userData, 
+        password: userData.password ? '********' : undefined 
+      });
+      
       const response = await authService.register(userData);
       console.log('AuthProvider: Registration response:', response);
       
       // If registration automatically logs in the user
-      if (response.token) {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('userData', JSON.stringify(response.user));
-        setUser(response.user);
+      if (response.token || response.data?.accessToken) {
+        const token = response.token || response.data?.accessToken;
+        const userData = response.user || response.data?.user;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+        
+        if (userData) {
+          localStorage.setItem('userData', JSON.stringify(userData));
+          setUser(userData);
+        }
       }
       
-      return response;
+      // Return success format
+      return { 
+        success: true,
+        data: response 
+      };
     } catch (err) {
       console.error('AuthProvider: Registration error:', err);
       
       // Set user-friendly error message
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else {
-        setError(err.message || 'Registration failed');
-      }
+      setError(err.message || 'Registration failed');
       
-      throw err;
+      // Return error format
+      return {
+        success: false,
+        error: err.message || 'Registration failed'
+      };
     } finally {
       setLoading(false);
     }
@@ -198,16 +224,25 @@ export const AuthProvider = ({ children }) => {
    */
   const logout = useCallback(async () => {
     try {
+      console.log('AuthProvider: Logging out user');
       setLoading(true);
       
       // Call logout API
       await authService.logout();
+      
+      console.log('AuthProvider: Logout successful');
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('AuthProvider: Logout error:', err);
     } finally {
       // Clear local storage and state regardless of API success
+      console.log('AuthProvider: Clearing auth state');
       localStorage.removeItem('token');
       localStorage.removeItem('userData');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
+      // Update state to reflect logged out status
       setUser(null);
       setLoading(false);
     }

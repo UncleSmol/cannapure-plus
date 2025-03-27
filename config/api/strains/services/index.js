@@ -1,15 +1,9 @@
 /**
- * Export all strain services
+ * Export unified strain service
+ * 
+ * This replaces the previous multiple category-specific services 
+ * with a single unified service that works with the universal strains table.
  */
-module.exports = {
-  medical: require('./medical-service'),
-  normal: require('./normal-service'),
-  indoor: require('./indoor-service'),
-  greenhouse: require('./greenhouse-service'),
-  exotic: require('./exotic-service'),
-  
-  // Add these services if needed
-  edibles: require('./edibles-service'),
-  extracts: require('./extracts-service'),
-  preRolled: require('./pre-rolled-service')
-};
+
+// Export the base service as the single point of access for all strain operations
+module.exports = require('./base-service');

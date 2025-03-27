@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import useAuth from "../user_auth/useAuth";
+import { useAuth } from "../../context/AuthProvider";
 import "./header.css";
 
 const Header = ({ currentPage }) => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
+  
+  // Log authentication state for debugging
+  useEffect(() => {
+    console.log("Header auth state:", { isAuthenticated, user });
+  }, [isAuthenticated, user]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -14,11 +19,18 @@ const Header = ({ currentPage }) => {
   const overlayRef = useRef(null);
   const headerRef = useRef(null);
 
-  // Handle logout
+  // Handle logout with error handling
   const handleLogout = async () => {
-    await logout();
-    window.location.hash = "homePage";
-    handleNavItemClick(); // Close mobile menu if open
+    console.log("Logout button clicked");
+    try {
+      await logout();
+      console.log("Logout successful");
+      window.location.hash = "homePage";
+      handleNavItemClick(); // Close mobile menu if open
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Show error to user if needed
+    }
   };
 
   // Menu items data - first 4 items that are always shown

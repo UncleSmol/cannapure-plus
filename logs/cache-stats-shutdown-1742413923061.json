@@ -1,0 +1,228 @@
+{
+  "timestamp": "2025-03-19T19:52:03.061Z",
+  "current": {
+    "timestamp": 1742413923061,
+    "cache": {
+      "hits": 0,
+      "misses": 6,
+      "sets": 6,
+      "deletes": 3,
+      "refreshes": 0,
+      "lastReset": 1742413688779,
+      "backgroundJobs": 1,
+      "invalidations": {
+        "manual": 3,
+        "automatic": 0,
+        "targeted": 0
+      },
+      "keys": 3,
+      "memory": 50,
+      "vsize": 480,
+      "hitRatio": 0,
+      "uptime": 234282,
+      "activeJobs": 3
+    },
+    "system": {
+      "memory": {
+        "rss": 72228864,
+        "heapTotal": 17932288,
+        "heapUsed": 16413040,
+        "external": 1264357
+      },
+      "uptime": 234.706954389
+    },
+    "responseTime": {
+      "cached": null,
+      "uncached": null
+    }
+  },
+  "history": [
+    {
+      "timestamp": 1742413748780,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742413688779,
+        "backgroundJobs": 0,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 60001,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71442432,
+          "heapTotal": 17932288,
+          "heapUsed": 15572776,
+          "external": 1264317
+        },
+        "uptime": 60.426021584
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742413808780,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742413688779,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 120001,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 72228864,
+          "heapTotal": 17932288,
+          "heapUsed": 16393144,
+          "external": 1264357
+        },
+        "uptime": 120.425956304
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742413868781,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742413688779,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 180002,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 72228864,
+          "heapTotal": 17932288,
+          "heapUsed": 16406136,
+          "external": 1264357
+        },
+        "uptime": 180.426447381
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742413923061,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742413688779,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 234282,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 72228864,
+          "heapTotal": 17932288,
+          "heapUsed": 16413040,
+          "external": 1264357
+        },
+        "uptime": 234.706954389
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742413923061,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742413688779,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 234282,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 72228864,
+          "heapTotal": 17932288,
+          "heapUsed": 16414216,
+          "external": 1264357
+        },
+        "uptime": 234.707013228
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    }
+  ],
+  "issues": [],
+  "thresholds": {
+    "hitRatio": 0.7,
+    "memoryUsage": 104857600,
+    "keysCount": 10000,
+    "responseTime": 200
+  }
+}

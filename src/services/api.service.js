@@ -5,12 +5,19 @@
 import axios from 'axios';
 import authService from './AuthService';
 
-// Create axios instance
+// Create axios instance with consistent baseURL
+// Using consistent API URL format
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_PATH = '/api'; // Separate the path for clarity
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: `${API_URL}${API_BASE_PATH}`,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+    'Accept': 'application/json' // Explicitly request JSON response
+  },
+  // Important for CORS with credentials
+  withCredentials: true
 });
 
 // Add request interceptor
@@ -55,6 +62,14 @@ api.interceptors.request.use(
 // Add response interceptor
 api.interceptors.response.use(
   (response) => {
+    // Check if the response is HTML when we expected JSON
+    const contentType = response.headers['content-type'];
+    if (contentType && contentType.includes('text/html') && 
+        !response.config.url.includes('/auth/')) {
+      console.warn('Received HTML response instead of JSON:', response.config.url);
+      // You could choose to reject this response or transform it
+      // For now, we'll just log a warning and pass it through
+    }
     return response;
   },
   async (error) => {
@@ -260,7 +275,7 @@ const apiService = {
    */
   async testConnection() {
     try {
-      const response = await api.get('/status');
+      const response = await api.get('/test');
       return response.data;
     } catch (error) {
       console.error('API connection test failed:', error);
@@ -276,6 +291,12 @@ const apiService = {
     if (error.response) {
       // The request was made and the server responded with an error status
       console.error('API Error Response:', error.response.data);
+      
+      // Check if we received HTML instead of JSON and log a special message
+      const contentType = error.response.headers['content-type'];
+      if (contentType && contentType.includes('text/html')) {
+        console.error('Received HTML instead of JSON. Possible routing issue or incorrect endpoint.');
+      }
       
       // Extract error message and code
       const errorMessage = error.response.data.error?.message || 'An error occurred';

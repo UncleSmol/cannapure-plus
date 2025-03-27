@@ -1,185 +1,196 @@
-const strainServices = require('./services');
+const strainService = require('./services/base-service');
 
 /**
- * Get all strains of a specific type
- * @param {string} strainType - Type of strain (medical, normal, etc.)
- * @param {Object} options - Query options
- * @returns {Promise<Object>} - Strains with pagination info
+ * Get strains with filters
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
-const getStrains = async (strainType, options = {}) => {
+const getStrains = async (req, res, next) => {
   try {
-    console.log(`[CONTROLLER] Getting ${strainType} strains with options:`, options);
+    console.log(`[CONTROLLER] Getting strains with query:`, req.query);
     
-    if (!strainServices[strainType]) {
-      throw { status: 400, message: `Invalid strain type: ${strainType}`, code: 'INVALID_STRAIN_TYPE' };
-    }
+    const filters = {
+      category: req.query.category,
+      thcMin: req.query.thc_min,
+      thcMax: req.query.thc_max,
+      cbdMin: req.query.cbd_min,
+      cbdMax: req.query.cbd_max,
+      strainType: req.query.strain_type,
+      location: req.query.location,
+      special: req.query.special === 'true',
+      minPrice: req.query.min_price,
+      maxPrice: req.query.max_price,
+      limit: req.query.limit,
+      offset: req.query.offset,
+      sortBy: req.query.sort_by,
+      sortDir: req.query.sort_dir
+    };
     
-    const result = await strainServices[strainType].getAll(options);
-    return result;
+    const result = await strainService.getStrains(filters);
+    return res.json(result);
   } catch (error) {
-    console.error(`[CONTROLLER] Error getting ${strainType} strains:`, error);
-    throw error;
+    console.error(`[CONTROLLER] Error getting strains:`, error);
+    next(error);
   }
 };
 
 /**
  * Get strain by ID
- * @param {string} strainType - Type of strain (medical, normal, etc.)
- * @param {number} id - Strain ID
- * @returns {Promise<Object>} - Strain data
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
-const getStrainById = async (strainType, id) => {
+const getStrainById = async (req, res, next) => {
   try {
-    console.log(`[CONTROLLER] Getting ${strainType} strain with ID: ${id}`);
+    console.log(`[CONTROLLER] Getting strain with ID: ${req.params.id}`);
     
-    if (!strainServices[strainType]) {
-      throw { status: 400, message: `Invalid strain type: ${strainType}`, code: 'INVALID_STRAIN_TYPE' };
+    const strain = await strainService.getStrainById(req.params.id, req.query.category);
+    
+    if (!strain) {
+      return res.status(404).json({ 
+        error: { message: 'Strain not found', code: 'STRAIN_NOT_FOUND' } 
+      });
     }
     
-    const strain = await strainServices[strainType].getById(id);
-    return strain;
+    return res.json(strain);
   } catch (error) {
-    console.error(`[CONTROLLER] Error getting ${strainType} strain by ID:`, error);
-    throw error;
-  }
-};
-
-/**
- * Get strains by type (Indica, Sativa, Hybrid)
- * @param {string} strainType - Type of strain (medical, normal, etc.)
- * @param {string} cannabisType - Cannabis type (Indica, Sativa, Hybrid)
- * @returns {Promise<Array>} - List of strains
- */
-const getStrainsByType = async (strainType, cannabisType) => {
-  try {
-    console.log(`[CONTROLLER] Getting ${strainType} strains of type: ${cannabisType}`);
-    
-    if (!strainServices[strainType]) {
-      throw { status: 400, message: `Invalid strain type: ${strainType}`, code: 'INVALID_STRAIN_TYPE' };
-    }
-    
-    const strains = await strainServices[strainType].getByType(cannabisType);
-    return strains;
-  } catch (error) {
-    console.error(`[CONTROLLER] Error getting ${strainType} strains by cannabis type:`, error);
-    throw error;
-  }
-};
-
-/**
- * Get strains by location
- * @param {string} strainType - Type of strain (medical, normal, etc.)
- * @param {string} location - Store location
- * @returns {Promise<Array>} - List of strains
- */
-const getStrainsByLocation = async (strainType, location) => {
-  try {
-    console.log(`[CONTROLLER] Getting ${strainType} strains at location: ${location}`);
-    
-    if (!strainServices[strainType]) {
-      throw { status: 400, message: `Invalid strain type: ${strainType}`, code: 'INVALID_STRAIN_TYPE' };
-    }
-    
-    const strains = await strainServices[strainType].getByLocation(location);
-    return strains;
-  } catch (error) {
-    console.error(`[CONTROLLER] Error getting ${strainType} strains by location:`, error);
-    throw error;
-  }
-};
-
-/**
- * Get special strains
- * @param {string} strainType - Type of strain (medical, normal, etc.)
- * @returns {Promise<Array>} - List of special strains
- */
-const getSpecialStrains = async (strainType) => {
-  try {
-    console.log(`[CONTROLLER] Getting special ${strainType} strains`);
-    
-    if (!strainServices[strainType]) {
-      throw { status: 400, message: `Invalid strain type: ${strainType}`, code: 'INVALID_STRAIN_TYPE' };
-    }
-    
-    const strains = await strainServices[strainType].getSpecials();
-    return strains;
-  } catch (error) {
-    console.error(`[CONTROLLER] Error getting special ${strainType} strains:`, error);
-    throw error;
+    console.error(`[CONTROLLER] Error getting strain by ID:`, error);
+    next(error);
   }
 };
 
 /**
  * Get medical strains by CBD content
- * @param {number} minCbd - Minimum CBD percentage
- * @returns {Promise<Array>} - List of medical strains
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
-const getMedicalStrainsByCbd = async (minCbd) => {
+const getMedicalStrainsByCbd = async (req, res, next) => {
   try {
-    console.log(`[CONTROLLER] Getting medical strains with minimum CBD content: ${minCbd}%`);
+    console.log(`[CONTROLLER] Getting medical strains with minimum CBD content: ${req.params.minCbd}%`);
     
-    const strains = await strainServices.medical.getByCbdContent(minCbd);
-    return strains;
+    const minCbd = parseFloat(req.params.minCbd);
+    
+    if (isNaN(minCbd)) {
+      return res.status(400).json({ 
+        error: { message: 'Invalid CBD percentage', code: 'INVALID_CBD_VALUE' } 
+      });
+    }
+    
+    const result = await strainService.getStrains({
+      category: 'medical',
+      cbdMin: minCbd
+    });
+    
+    return res.json(result.strains);
   } catch (error) {
     console.error(`[CONTROLLER] Error getting medical strains by CBD content:`, error);
-    throw error;
+    next(error);
   }
 };
 
 /**
  * Get medical strains by condition
- * @param {string} condition - Medical condition
- * @returns {Promise<Array>} - List of medical strains
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
-const getMedicalStrainsByCondition = async (condition) => {
+const getMedicalStrainsByCondition = async (req, res, next) => {
   try {
+    const condition = req.params.condition;
     console.log(`[CONTROLLER] Getting medical strains for condition: ${condition}`);
     
-    const strains = await strainServices.medical.getByCondition(condition);
-    return strains;
+    const result = await strainService.getStrainsByCondition(condition);
+    
+    return res.json(result.strains);
   } catch (error) {
     console.error(`[CONTROLLER] Error getting medical strains by condition:`, error);
-    throw error;
+    next(error);
   }
 };
 
 /**
- * Get all strains from all categories
- * @param {Object} options - Query options
- * @returns {Promise<Object>} - All strains grouped by category
+ * Create a new strain
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
-const getAllStrains = async (options = {}) => {
+const createStrain = async (req, res, next) => {
   try {
-    console.log(`[CONTROLLER] Getting all strains with options:`, options);
+    console.log(`[CONTROLLER] Creating new strain:`, req.body);
     
-    const result = {};
-    const strainTypes = Object.keys(strainServices);
-    
-    // Process each strain type in parallel
-    await Promise.all(strainTypes.map(async (type) => {
-      try {
-        const data = await strainServices[type].getAll(options);
-        result[type] = data;
-      } catch (error) {
-        console.error(`[CONTROLLER] Error getting ${type} strains:`, error);
-        result[type] = { error: error.message, strains: [] };
-      }
-    }));
-    
-    return result;
+    const strain = await strainService.createStrain(req.body);
+    return res.status(201).json(strain);
   } catch (error) {
-    console.error(`[CONTROLLER] Error getting all strains:`, error);
-    throw error;
+    console.error(`[CONTROLLER] Error creating strain:`, error);
+    next(error);
+  }
+};
+
+/**
+ * Update a strain
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ */
+const updateStrain = async (req, res, next) => {
+  try {
+    console.log(`[CONTROLLER] Updating strain with ID: ${req.params.id}`);
+    
+    const strain = await strainService.updateStrain(
+      req.params.id, 
+      req.body, 
+      req.query.category
+    );
+    
+    if (!strain) {
+      return res.status(404).json({ 
+        error: { message: 'Strain not found', code: 'STRAIN_NOT_FOUND' } 
+      });
+    }
+    
+    return res.json(strain);
+  } catch (error) {
+    console.error(`[CONTROLLER] Error updating strain:`, error);
+    next(error);
+  }
+};
+
+/**
+ * Delete a strain
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ */
+const deleteStrain = async (req, res, next) => {
+  try {
+    console.log(`[CONTROLLER] Deleting strain with ID: ${req.params.id}`);
+    
+    const success = await strainService.deleteStrain(
+      req.params.id, 
+      req.query.category
+    );
+    
+    if (!success) {
+      return res.status(404).json({ 
+        error: { message: 'Strain not found', code: 'STRAIN_NOT_FOUND' } 
+      });
+    }
+    
+    return res.status(204).end();
+  } catch (error) {
+    console.error(`[CONTROLLER] Error deleting strain:`, error);
+    next(error);
   }
 };
 
 module.exports = {
   getStrains,
   getStrainById,
-  getStrainsByType,
-  getStrainsByLocation,
-  getSpecialStrains,
   getMedicalStrainsByCbd,
   getMedicalStrainsByCondition,
-  getAllStrains
+  createStrain,
+  updateStrain,
+  deleteStrain
 };

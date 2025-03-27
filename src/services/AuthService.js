@@ -204,6 +204,7 @@ class AuthService {
    */
   async login(email, password) {
     try {
+      console.log(`Attempting login for email: ${email} to ${apiConfig.auth.login}`);
       const response = await fetch(apiConfig.auth.login, {
         method: 'POST',
         headers: {
@@ -212,36 +213,73 @@ class AuthService {
         body: JSON.stringify({ email, password }),
       });
 
+      // Parse the JSON response
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
+        // Extract the error message properly
+        const errorMessage = data.error?.message || 
+                            data.error || 
+                            'Login failed. Please check your credentials.';
+        console.error('Login response error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      console.log('Login successful, response:', data);
       
-      // Store tokens in localStorage
-      this.setToken(data.token);
-      this.setRefreshToken(data.refreshToken);
+      // Store tokens in localStorage - adjust property names based on your API response
+      this.setToken(data.data?.accessToken || data.accessToken || data.token);
+      this.setRefreshToken(data.data?.refreshToken || data.refreshToken);
       
       // Extract and store user data
-      const userData = this.getUserFromToken(data.token);
+      const userData = data.data?.user || data.user || this.getUserFromToken(data.token);
       if (userData) {
         this.setUser(userData);
       }
       
       return data;
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      console.error('Login error:', error.message);
+      // Throw error with message, not the entire object
+      throw new Error(error.message || 'Login failed');
     }
   }
 
   /**
    * Logout user and clear all auth data
+   * @returns {Promise<void>}
    */
-  logout() {
-    this.clearTokens();
-    // You might want to call a logout endpoint here if your backend needs to invalidate the token
+  async logout() {
+    try {
+      console.log("AuthService: Attempting logout");
+      
+      // Get the refresh token for server-side invalidation
+      const refreshToken = this.getRefreshToken();
+      
+      if (refreshToken) {
+        // Call the logout endpoint to invalidate the token on the server
+        const response = await fetch(apiConfig.auth.logout, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+        
+        if (!response.ok) {
+          console.warn('Server-side logout failed, but continuing with client-side logout');
+        } else {
+          console.log('Server-side logout successful');
+        }
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Continue with client-side logout even if server-side fails
+    } finally {
+      // Always clear local tokens regardless of API success
+      console.log('Clearing local authentication data');
+      this.clearTokens();
+    }
   }
 
   /**
@@ -284,6 +322,67 @@ class AuthService {
       console.error('Error refreshing token:', error);
       this.logout();
       throw error;
+    }
+  }
+
+  /**
+   * Register a new user
+   * @param {Object} userData - User registration data
+   * @returns {Promise<Object>} Registration response
+   */
+  async register(userData) {
+    try {
+      console.log(`Attempting to register user with email: ${userData.email}`);
+      
+      // Ensure the data has the expected field names
+      const registrationData = {
+        ...userData,
+        // If userData was sent with camelCase instead of snake_case
+        first_name: userData.first_name || userData.firstName,
+        last_name: userData.last_name || userData.lastName,
+        phone_number: userData.phone_number || userData.phoneNumber,
+        id_number: userData.id_number || userData.idNumber
+      };
+      
+      const response = await fetch(apiConfig.auth.register, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      });
+
+      // Parse the JSON response
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Extract the error message properly
+        const errorMessage = data.error?.message || 
+                            data.error || 
+                            'Registration failed. Please try again.';
+        console.error('Registration response error:', errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      console.log('Registration successful, response:', data);
+      
+      // If the API automatically logs in the user after registration
+      if (data.data?.accessToken || data.accessToken || data.token) {
+        this.setToken(data.data?.accessToken || data.accessToken || data.token);
+        this.setRefreshToken(data.data?.refreshToken || data.refreshToken);
+      
+        // Extract and store user data
+        const userData = data.data?.user || data.user || this.getUserFromToken(data.token);
+        if (userData) {
+          this.setUser(userData);
+        }
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error.message);
+      // Throw error with message, not the entire object
+      throw new Error(error.message || 'Registration failed');
     }
   }
 }

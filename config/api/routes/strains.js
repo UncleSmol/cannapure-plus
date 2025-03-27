@@ -3,7 +3,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const db = require('../../database');
 const { executeQuery } = require('../utils/db-utils');
 
 // Cache TTL configuration (in milliseconds)
@@ -22,16 +22,9 @@ router.get('/', async (req, res, next) => {
   try {
     const { limit = 50, offset = 0, sortBy = 'strain_name', sortDir = 'asc' } = req.query;
     
+    // Updated to use the unified strains table
     const sql = `
-      SELECT * FROM medical_strains
-      UNION ALL
-      SELECT * FROM normal_strains
-      UNION ALL
-      SELECT * FROM greenhouse_strains
-      UNION ALL
-      SELECT * FROM indoor_strains
-      UNION ALL
-      SELECT * FROM exotic_tunnel_strains
+      SELECT * FROM strains
       ORDER BY ${sortBy} ${sortDir === 'desc' ? 'DESC' : 'ASC'}
       LIMIT ? OFFSET ?
     `;
@@ -74,9 +67,9 @@ router.get('/:type', async (req, res, next) => {
       });
     }
     
-    // Build query with filters
-    let sql = `SELECT * FROM ${type}_strains WHERE 1=1`;
-    const params = [];
+    // Updated to use the unified strains table with category filter
+    let sql = `SELECT * FROM strains WHERE category = ?`;
+    const params = [type];
     
     if (minPrice) {
       sql += ' AND price >= ?';
@@ -125,9 +118,10 @@ router.get('/:type/:id', async (req, res, next) => {
       });
     }
     
-    const sql = `SELECT * FROM ${type}_strains WHERE id = ?`;
+    // Updated to use the unified strains table with category and id filters
+    const sql = `SELECT * FROM strains WHERE category = ? AND id = ?`;
     
-    const result = await executeQuery(db, sql, [id], {
+    const result = await executeQuery(db, sql, [type, id], {
       useCache: true,
       ttl: CACHE_TTL.STRAIN_DETAIL,
       forceRefresh: req.forceRefresh
@@ -177,14 +171,16 @@ router.get('/:type/cannabis/:cannabisType', async (req, res, next) => {
       });
     }
     
+    // Updated to use the unified strains table with category and strain_type filters
     const sql = `
-      SELECT * FROM ${type}_strains 
-      WHERE LOWER(strain_type) = ? 
+      SELECT * FROM strains 
+      WHERE category = ? AND LOWER(strain_type) = ? 
       ORDER BY strain_name ASC
       LIMIT ? OFFSET ?
     `;
     
     const result = await executeQuery(db, sql, [
+      type,
       cannabisType.toLowerCase(), 
       parseInt(limit), 
       parseInt(offset)

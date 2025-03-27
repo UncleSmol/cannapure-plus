@@ -11,26 +11,34 @@ package-lock.json
 /coverage
 /cypress/videos
 /cypress/screenshots
+/.nyc_output
+/jest-coverage
+/.jest-*
 
 # Production build files
 /build
 /dist
+/out
+/.next/
+/storybook-static
 
 # Environment variables and secrets
 .env
 .env.local
 .env.development.local
+.env.development
 .env.test.local
 .env.production.local
 .env.production
-.env.production
 .env*.local
+.env.staging
 
 # Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 debug.log
+lerna-debug.log*
 
 # Editor directories and files
 .idea/
@@ -42,21 +50,33 @@ debug.log
 *.sw?
 .DS_Store
 Thumbs.db
+.history/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
 .eslintcache
+.stylelintcache
+*.swp
+*.swo
+*~
 
 # Backend specific
 /server/node_modules
 /config/secrets.js
+/api/node_modules
 
 # Database files
 *.sqlite
 *.db
 *.sql
+dump.rdb
 
 # OS generated files
 .DS_Store
@@ -67,5 +87,39 @@ Thumbs.db
 ehthumbs.db
 Thumbs.db
 
+# Build artifacts
+*.log
+*.pot
+*.po~
+*.mo~
+*.tgz
+.rpt2_cache/
+*.tsbuildinfo
+
 # Project specific
 .qodo
+.github/
+.logs/
+install-jwt-decode.sh
+jest.config.js
+/public/sitemap.xml
+/public/robots.txt
+/src/generated/
+
+# Mobile app related (if applicable)
+.gradle
+/android/app/release
+/ios/Pods/
+
+# Analytics, SEO, and tracking files that may contain sensitive data
+/analytics/
+/google*.html
+/yandex*.html
+/public/tag-manager.js
+/public/analytics.js
+
+# Cannabis industry specific (if applicable)
+*compliance-report*
+*lab-result*
+*inventory-report*
+*seed-to-sale*

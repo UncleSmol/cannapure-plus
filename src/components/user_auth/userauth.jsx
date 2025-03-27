@@ -101,25 +101,36 @@ export default function UserAuth() {
     setFeedbackMessage({ type: "", message: "" });
 
     try {
-      const result = await login({
+      console.log('Attempting login with:', { 
         email: loginData.email,
-        password: loginData.password,
+        password: loginData.password ? '********' : '',
         cpNumber: loginData.cpNumber || undefined
       });
       
-      if (!result.success) {
+      // Call the login function with the correct parameters
+      const result = await login(loginData);
+      
+      console.log('Login result:', result);
+      
+      if (!result.success && result.error) {
         setFeedbackMessage({ 
           type: "error", 
-          message: result.error || "Login failed. Please check your credentials."
+          message: typeof result.error === 'string' 
+            ? result.error 
+            : "Login failed. Please check your credentials."
         });
       }
       // On success, the useEffect with isAuthenticated will redirect
     } catch (error) {
+      console.error("Login error:", error);
+      
+      // Get a proper error message
+      const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+      
       setFeedbackMessage({ 
         type: "error", 
-        message: "An unexpected error occurred. Please try again."
+        message: errorMessage
       });
-      console.error("Login error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -139,16 +150,23 @@ export default function UserAuth() {
     setFeedbackMessage({ type: "", message: "" });
     
     try {
-      // Transform userData to match the expected format
+      // Transform userData to match the expected format by the backend
       const registrationData = {
-        name: `${userData.firstName} ${userData.lastName}`,
+        // Use the field names that match the backend requirements
+        first_name: userData.firstName,
+        last_name: userData.lastName,
         email: userData.email,
         password: userData.password,
-        phoneNumber: userData.phoneNumber,
-        idNumber: userData.idNumber,
+        phone_number: userData.phoneNumber,
+        id_number: userData.idNumber,
         address: userData.address,
         cpNumber: userData.cpNumber || undefined
       };
+      
+      console.log('Submitting registration data:', { 
+        ...registrationData, 
+        password: '********' 
+      });
       
       const result = await register(registrationData);
       

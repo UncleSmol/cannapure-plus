@@ -1,0 +1,2745 @@
+{
+  "timestamp": "2025-03-19T19:43:21.342Z",
+  "current": {
+    "timestamp": 1742413401342,
+    "cache": {
+      "hits": 0,
+      "misses": 6,
+      "sets": 6,
+      "deletes": 3,
+      "refreshes": 0,
+      "lastReset": 1742409497665,
+      "backgroundJobs": 19,
+      "invalidations": {
+        "manual": 3,
+        "automatic": 0,
+        "targeted": 0
+      },
+      "keys": 3,
+      "memory": 50,
+      "vsize": 480,
+      "hitRatio": 0,
+      "uptime": 3903677,
+      "activeJobs": 3
+    },
+    "system": {
+      "memory": {
+        "rss": 25997312,
+        "heapTotal": 21078016,
+        "heapUsed": 19918208,
+        "external": 1278873
+      },
+      "uptime": 3910.263481773
+    },
+    "responseTime": {
+      "cached": null,
+      "uncached": {
+        "avg": 49.65,
+        "min": 1,
+        "max": 374,
+        "count": 20
+      }
+    }
+  },
+  "history": [
+    {
+      "timestamp": 1742409557667,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 0,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 60002,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 70987776,
+          "heapTotal": 17932288,
+          "heapUsed": 15602920,
+          "external": 1265979
+        },
+        "uptime": 66.588722289
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409617668,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 120003,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71774208,
+          "heapTotal": 17932288,
+          "heapUsed": 16538872,
+          "external": 1266019
+        },
+        "uptime": 126.590259081
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409677669,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 180004,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71774208,
+          "heapTotal": 17932288,
+          "heapUsed": 16551592,
+          "external": 1266019
+        },
+        "uptime": 186.590695019
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409737670,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 240005,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71774208,
+          "heapTotal": 17932288,
+          "heapUsed": 16564280,
+          "external": 1266019
+        },
+        "uptime": 246.591326108
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409797670,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 300005,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71774208,
+          "heapTotal": 17932288,
+          "heapUsed": 16597528,
+          "external": 1266019
+        },
+        "uptime": 306.592256268
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409857671,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 360006,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71774208,
+          "heapTotal": 17932288,
+          "heapUsed": 16624960,
+          "external": 1266019
+        },
+        "uptime": 366.593147816
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409917672,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 3,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 420007,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71495680,
+          "heapTotal": 18194432,
+          "heapUsed": 16518440,
+          "external": 1267647
+        },
+        "uptime": 426.593393584
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742409977673,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 3,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 480008,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71495680,
+          "heapTotal": 18194432,
+          "heapUsed": 16533400,
+          "external": 1267647
+        },
+        "uptime": 486.594404857
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742410037674,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 3,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 540009,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71495680,
+          "heapTotal": 18194432,
+          "heapUsed": 16548656,
+          "external": 1267647
+        },
+        "uptime": 546.595344947
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742410097674,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 3,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 600009,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71495680,
+          "heapTotal": 18194432,
+          "heapUsed": 16580928,
+          "external": 1267647
+        },
+        "uptime": 606.596192552
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742410157675,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 3,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 660010,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 71495680,
+          "heapTotal": 18194432,
+          "heapUsed": 16606360,
+          "external": 1267647
+        },
+        "uptime": 666.596418314
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1742410217676,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 4,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 720011,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73240576,
+          "heapTotal": 19505152,
+          "heapUsed": 18007776,
+          "external": 1275135
+        },
+        "uptime": 726.597573803
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410277677,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 4,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 780012,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73502720,
+          "heapTotal": 19505152,
+          "heapUsed": 18023656,
+          "external": 1275135
+        },
+        "uptime": 786.598338742
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410337678,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 4,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 840013,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73502720,
+          "heapTotal": 19505152,
+          "heapUsed": 18038800,
+          "external": 1275135
+        },
+        "uptime": 846.599993572
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410397679,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 4,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 900014,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73502720,
+          "heapTotal": 19505152,
+          "heapUsed": 18071840,
+          "external": 1275135
+        },
+        "uptime": 906.600971257
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410457680,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 4,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 960015,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73502720,
+          "heapTotal": 19505152,
+          "heapUsed": 18101088,
+          "external": 1275135
+        },
+        "uptime": 966.601371568
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410517681,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 5,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1020016,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73539584,
+          "heapTotal": 20029440,
+          "heapUsed": 18126352,
+          "external": 1275135
+        },
+        "uptime": 1026.6027944
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410577682,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 5,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1080017,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73539584,
+          "heapTotal": 20029440,
+          "heapUsed": 18141576,
+          "external": 1275135
+        },
+        "uptime": 1086.603382056
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410637683,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 5,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1140018,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73539584,
+          "heapTotal": 20029440,
+          "heapUsed": 18157160,
+          "external": 1275135
+        },
+        "uptime": 1146.605277428
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410697683,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 5,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1200018,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73539584,
+          "heapTotal": 20029440,
+          "heapUsed": 18189832,
+          "external": 1275135
+        },
+        "uptime": 1206.604905818
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410757684,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 5,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1260019,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73539584,
+          "heapTotal": 20029440,
+          "heapUsed": 18215488,
+          "external": 1275135
+        },
+        "uptime": 1266.605439966
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410817685,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 8,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1320020,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73666560,
+          "heapTotal": 20029440,
+          "heapUsed": 18441992,
+          "external": 1278873
+        },
+        "uptime": 1326.606414066
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410877686,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 8,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1380021,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73666560,
+          "heapTotal": 20029440,
+          "heapUsed": 18457216,
+          "external": 1278873
+        },
+        "uptime": 1386.607528241
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410937687,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 8,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1440022,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73666560,
+          "heapTotal": 20029440,
+          "heapUsed": 18472440,
+          "external": 1278873
+        },
+        "uptime": 1446.608339134
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742410997687,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 8,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1500022,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73666560,
+          "heapTotal": 20029440,
+          "heapUsed": 18505208,
+          "external": 1278873
+        },
+        "uptime": 1506.609092905
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 6.75,
+          "min": 1,
+          "max": 42,
+          "count": 8
+        }
+      }
+    },
+    {
+      "timestamp": 1742411057688,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 8,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1560023,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73269248,
+          "heapTotal": 20029440,
+          "heapUsed": 17976496,
+          "external": 1279797
+        },
+        "uptime": 1566.60935459
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411117689,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 9,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1620024,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73924608,
+          "heapTotal": 20029440,
+          "heapUsed": 18683440,
+          "external": 1279797
+        },
+        "uptime": 1626.61035798
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411177689,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 9,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1680024,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73297920,
+          "heapTotal": 20029440,
+          "heapUsed": 17946776,
+          "external": 1274211
+        },
+        "uptime": 1686.611210453
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411237690,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 9,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1740025,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73297920,
+          "heapTotal": 20029440,
+          "heapUsed": 17962000,
+          "external": 1274211
+        },
+        "uptime": 1746.611349623
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411297690,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 9,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1800025,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 73297920,
+          "heapTotal": 20029440,
+          "heapUsed": 17995384,
+          "external": 1274211
+        },
+        "uptime": 1806.612109929
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411357691,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 9,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1860026,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 60190720,
+          "heapTotal": 20029440,
+          "heapUsed": 18024968,
+          "external": 1274211
+        },
+        "uptime": 1866.612364301
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411417692,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 10,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1920027,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 45694976,
+          "heapTotal": 20029440,
+          "heapUsed": 18736640,
+          "external": 1274211
+        },
+        "uptime": 1926.61349947
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411477693,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 10,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 1980028,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 45170688,
+          "heapTotal": 20029440,
+          "heapUsed": 18752200,
+          "external": 1274211
+        },
+        "uptime": 1986.614370767
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411537694,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 10,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2040029,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 29573120,
+          "heapTotal": 20029440,
+          "heapUsed": 18767440,
+          "external": 1274211
+        },
+        "uptime": 2046.615386045
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411597694,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 10,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2100029,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 29573120,
+          "heapTotal": 20029440,
+          "heapUsed": 18800104,
+          "external": 1274211
+        },
+        "uptime": 2106.615904328
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411657695,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 10,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2160030,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 29573120,
+          "heapTotal": 20029440,
+          "heapUsed": 18825928,
+          "external": 1274211
+        },
+        "uptime": 2166.616749345
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411717706,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 12,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2220030,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 29442048,
+          "heapTotal": 20029440,
+          "heapUsed": 18596712,
+          "external": 1275839
+        },
+        "uptime": 2226.627861001
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411777697,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 12,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2280032,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 29179904,
+          "heapTotal": 20029440,
+          "heapUsed": 18611952,
+          "external": 1275839
+        },
+        "uptime": 2286.618382153
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411837698,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 12,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2340033,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 29179904,
+          "heapTotal": 20029440,
+          "heapUsed": 18627192,
+          "external": 1275839
+        },
+        "uptime": 2346.619364799
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411897698,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 12,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2400033,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 28786688,
+          "heapTotal": 20029440,
+          "heapUsed": 18659776,
+          "external": 1275839
+        },
+        "uptime": 2406.619963452
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742411957698,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 12,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2460033,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 23805952,
+          "heapTotal": 20029440,
+          "heapUsed": 18685600,
+          "external": 1275839
+        },
+        "uptime": 2466.620259813
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742412017698,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 13,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2520033,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 22859776,
+          "heapTotal": 20029440,
+          "heapUsed": 18451912,
+          "external": 1275839
+        },
+        "uptime": 2526.620222043
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742412077699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 13,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2580034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 22597632,
+          "heapTotal": 20029440,
+          "heapUsed": 18467152,
+          "external": 1275839
+        },
+        "uptime": 2586.62078447
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 5.909090909090909,
+          "min": 1,
+          "max": 42,
+          "count": 11
+        }
+      }
+    },
+    {
+      "timestamp": 1742412137699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 13,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2640034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 24711168,
+          "heapTotal": 20029440,
+          "heapUsed": 19015000,
+          "external": 1277907
+        },
+        "uptime": 2646.621172596
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 58.8125,
+          "min": 1,
+          "max": 374,
+          "count": 16
+        }
+      }
+    },
+    {
+      "timestamp": 1742412197699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 13,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2700034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 33681408,
+          "heapTotal": 20815872,
+          "heapUsed": 19252288,
+          "external": 1275277
+        },
+        "uptime": 2706.620820354
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412257699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 13,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2760034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 33681408,
+          "heapTotal": 20815872,
+          "heapUsed": 19281680,
+          "external": 1275277
+        },
+        "uptime": 2766.621104654
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412317699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 14,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2820034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34340864,
+          "heapTotal": 20815872,
+          "heapUsed": 19261632,
+          "external": 1275277
+        },
+        "uptime": 2826.62111286
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412377699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 14,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2880034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34471936,
+          "heapTotal": 20815872,
+          "heapUsed": 19276872,
+          "external": 1275277
+        },
+        "uptime": 2886.621102178
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412437699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 14,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 2940034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34471936,
+          "heapTotal": 20815872,
+          "heapUsed": 19292112,
+          "external": 1275277
+        },
+        "uptime": 2946.620934546
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412497699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 14,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3000034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34471936,
+          "heapTotal": 21078016,
+          "heapUsed": 19600400,
+          "external": 1275277
+        },
+        "uptime": 3006.62054744
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412557699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 14,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3060034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34471936,
+          "heapTotal": 21078016,
+          "heapUsed": 19626224,
+          "external": 1275277
+        },
+        "uptime": 3066.621103228
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412617699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 17,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3120034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34398208,
+          "heapTotal": 21078016,
+          "heapUsed": 19253976,
+          "external": 1278873
+        },
+        "uptime": 3126.620954275
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412677699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 17,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3180034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34398208,
+          "heapTotal": 21078016,
+          "heapUsed": 19269792,
+          "external": 1278873
+        },
+        "uptime": 3186.620911386
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412737699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 17,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3240034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34398208,
+          "heapTotal": 21078016,
+          "heapUsed": 19285392,
+          "external": 1278873
+        },
+        "uptime": 3246.620847164
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412797699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 17,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3300034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34398208,
+          "heapTotal": 21078016,
+          "heapUsed": 19318968,
+          "external": 1278873
+        },
+        "uptime": 3306.621049135
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412857699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 17,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3360034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34267136,
+          "heapTotal": 21078016,
+          "heapUsed": 19345776,
+          "external": 1278873
+        },
+        "uptime": 3366.620827528
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412917699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 18,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3420034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 34398208,
+          "heapTotal": 21078016,
+          "heapUsed": 19962512,
+          "external": 1278873
+        },
+        "uptime": 3426.621021485
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742412977699,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 18,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3480034,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 32563200,
+          "heapTotal": 21078016,
+          "heapUsed": 19978040,
+          "external": 1278873
+        },
+        "uptime": 3486.620826773
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413037843,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 18,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3540178,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 23650304,
+          "heapTotal": 21078016,
+          "heapUsed": 19993640,
+          "external": 1278873
+        },
+        "uptime": 3546.765135373
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413101524,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 18,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3603788,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 21827584,
+          "heapTotal": 21078016,
+          "heapUsed": 20028288,
+          "external": 1278873
+        },
+        "uptime": 3610.550133178
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413161453,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 18,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3663788,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 22028288,
+          "heapTotal": 21078016,
+          "heapUsed": 19232144,
+          "external": 1278873
+        },
+        "uptime": 3670.374943175
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413221493,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 19,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3723828,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 25358336,
+          "heapTotal": 21078016,
+          "heapUsed": 19859400,
+          "external": 1278873
+        },
+        "uptime": 3730.41524638
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413281514,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 19,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3783849,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 24702976,
+          "heapTotal": 21078016,
+          "heapUsed": 19874304,
+          "external": 1278873
+        },
+        "uptime": 3790.435466485
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413341522,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 19,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3843857,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 24702976,
+          "heapTotal": 21078016,
+          "heapUsed": 19889408,
+          "external": 1278873
+        },
+        "uptime": 3850.443617331
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413401342,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 19,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3903677,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 25997312,
+          "heapTotal": 21078016,
+          "heapUsed": 19918208,
+          "external": 1278873
+        },
+        "uptime": 3910.263481773
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413401342,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 19,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3903677,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 25997312,
+          "heapTotal": 21078016,
+          "heapUsed": 19921920,
+          "external": 1278873
+        },
+        "uptime": 3910.263534053
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    },
+    {
+      "timestamp": 1742413402421,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1742409497665,
+        "backgroundJobs": 19,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 3904756,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 26730496,
+          "heapTotal": 21078016,
+          "heapUsed": 19939264,
+          "external": 1277445
+        },
+        "uptime": 3911.342748946
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": {
+          "avg": 49.65,
+          "min": 1,
+          "max": 374,
+          "count": 20
+        }
+      }
+    }
+  ],
+  "issues": [],
+  "thresholds": {
+    "hitRatio": 0.7,
+    "memoryUsage": 104857600,
+    "keysCount": 10000,
+    "responseTime": 200
+  }
+}

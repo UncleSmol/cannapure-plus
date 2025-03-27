@@ -17,20 +17,35 @@ const CRITICAL_ENDPOINTS = [
     cronExpression: '*/30 * * * *', // Every 30 minutes
     ttl: 1800, // 30 minutes
     fetchFunction: async () => {
-      const sql = `
-        SELECT * FROM medical_strains
-        UNION ALL
-        SELECT * FROM normal_strains
-        UNION ALL
-        SELECT * FROM greenhouse_strains
-        UNION ALL
-        SELECT * FROM indoor_strains
-        UNION ALL
-        SELECT * FROM exotic_tunnel_strains
-        LIMIT 100
-      `;
-      const [rows] = await db.execute(sql);
-      return { data: rows };
+      try {
+        const sql = `
+          SELECT * FROM medical_strains
+          UNION ALL
+          SELECT * FROM normal_strains
+          UNION ALL
+          SELECT * FROM greenhouse_strains
+          UNION ALL
+          SELECT * FROM indoor_strains
+          UNION ALL
+          SELECT * FROM exotic_tunnel_strains
+          LIMIT 100
+        `;
+        const [rows] = await db.execute(sql);
+        return { data: rows };
+      } catch (error) {
+        // Check for specific error about missing tables
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+          console.debug(`[REFRESH] Skipping refresh for strains:list due to missing table: ${error.sqlMessage}`);
+          return { 
+            data: [], 
+            metadata: { 
+              error: 'Database schema not fully initialized', 
+              status: 'pending' 
+            }
+          };
+        }
+        throw error;
+      }
     }
   },
   {
@@ -39,9 +54,24 @@ const CRITICAL_ENDPOINTS = [
     cronExpression: '*/15 * * * *', // Every 15 minutes
     ttl: 900, // 15 minutes
     fetchFunction: async () => {
-      const sql = 'SELECT * FROM medical_strains LIMIT 100';
-      const [rows] = await db.execute(sql);
-      return { data: rows };
+      try {
+        const sql = 'SELECT * FROM medical_strains LIMIT 100';
+        const [rows] = await db.execute(sql);
+        return { data: rows };
+      } catch (error) {
+        // Check for specific error about missing tables
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+          console.debug(`[REFRESH] Skipping refresh for strains:medical:list due to missing table: ${error.sqlMessage}`);
+          return { 
+            data: [], 
+            metadata: { 
+              error: 'Database schema not fully initialized', 
+              status: 'pending' 
+            }
+          };
+        }
+        throw error;
+      }
     }
   },
   {
@@ -68,23 +98,28 @@ const CRITICAL_ENDPOINTS = [
 function startRefreshJob(endpoint) {
   const { key, namespace, cronExpression, ttl, fetchFunction } = endpoint;
   
-  const jobId = cacheService.scheduleRefresh(key, fetchFunction, {
-    namespace,
-    cronExpression,
-    ttl
-  });
-  
-  activeJobs.set(jobId, {
-    key,
-    namespace,
-    cronExpression,
-    ttl,
-    startedAt: Date.now()
-  });
-  
-  console.log(`[REFRESH] Started background refresh job for ${namespace}:${key} with cron: ${cronExpression}`);
-  
-  return jobId;
+  try {
+    const jobId = cacheService.scheduleRefresh(key, fetchFunction, {
+      namespace,
+      cronExpression,
+      ttl
+    });
+    
+    activeJobs.set(jobId, {
+      key,
+      namespace,
+      cronExpression,
+      ttl,
+      startedAt: Date.now()
+    });
+    
+    console.log(`[REFRESH] Started background refresh job for ${namespace}:${key} with cron: ${cronExpression}`);
+    
+    return jobId;
+  } catch (error) {
+    console.error(`[REFRESH] Failed to schedule refresh job for ${namespace}:${key}:`, error);
+    return null;
+  }
 }
 
 /**
@@ -105,48 +140,68 @@ function stopRefreshJob(jobId) {
 
 /**
  * Pre-warm the cache for critical endpoints
- * @returns {Promise<void>}
+ * @returns {Promise<Array>} Results of pre-warming operations
  */
 async function prewarmCache() {
   console.log('[REFRESH] Pre-warming cache for critical endpoints');
   
-  const promises = CRITICAL_ENDPOINTS.map(async (endpoint) => {
-    try {
-      const { key, namespace, ttl, fetchFunction } = endpoint;
-      
-      console.log(`[REFRESH] Pre-warming cache for ${namespace}:${key}`);
-      
-      // Fetch and cache the data
-      const data = await fetchFunction();
-      
-      // Store in cache
-      const now = Date.now();
-      const result = {
-        data,
-        metadata: {
-          cachedAt: now,
-          expiresAt: now + (ttl * 1000),
-          ttl,
-          refreshCount: 0,
-          refreshType: 'prewarm'
+  const results = await Promise.all(
+    CRITICAL_ENDPOINTS.map(async (endpoint) => {
+      try {
+        const { key, namespace, ttl, fetchFunction } = endpoint;
+        
+        console.log(`[REFRESH] Pre-warming cache for ${namespace}:${key}`);
+        
+        // Fetch and cache the data
+        const data = await fetchFunction();
+        
+        // Store in cache
+        const now = Date.now();
+        const result = {
+          data,
+          metadata: {
+            cachedAt: now,
+            expiresAt: now + (ttl * 1000),
+            ttl,
+            refreshCount: 0,
+            refreshType: 'prewarm'
+          }
+        };
+        
+        // Use the cache service to store
+        cacheService.invalidate(key, { namespace });
+        cacheService.get(key, () => Promise.resolve(data), {
+          namespace,
+          ttl
+        });
+        
+        console.log(`[REFRESH] Pre-warmed cache for ${namespace}:${key}`);
+        return { key, namespace, success: true };
+      } catch (error) {
+        // Only log detailed error if it's not a known missing table issue
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+          console.debug(`[REFRESH] Skipping pre-warming for ${endpoint.namespace}:${endpoint.key} due to missing table: ${error.sqlMessage}`);
+          return { 
+            key: endpoint.key, 
+            namespace: endpoint.namespace, 
+            success: false, 
+            reason: 'missing-table' 
+          };
+        } else {
+          console.error(`[REFRESH] Error pre-warming cache for ${endpoint.namespace}:${endpoint.key}`, error);
+          return { 
+            key: endpoint.key, 
+            namespace: endpoint.namespace, 
+            success: false, 
+            error: error.message 
+          };
         }
-      };
-      
-      // Use the cache service to store
-      cacheService.invalidate(key, { namespace });
-      cacheService.get(key, () => Promise.resolve(data), {
-        namespace,
-        ttl
-      });
-      
-      console.log(`[REFRESH] Pre-warmed cache for ${namespace}:${key}`);
-    } catch (error) {
-      console.error(`[REFRESH] Error pre-warming cache for ${endpoint.namespace}:${endpoint.key}`, error);
-    }
-  });
+      }
+    })
+  );
   
-  await Promise.all(promises);
   console.log('[REFRESH] Completed pre-warming cache for critical endpoints');
+  return results;
 }
 
 /**
@@ -196,28 +251,40 @@ function getJobStatus() {
 async function init() {
   console.log('[REFRESH] Initializing background refresh service');
   
-  // Pre-warm the cache
-  await prewarmCache();
-  
-  // Start all jobs
-  startAllJobs();
-  
-  // Setup monitoring
-  setInterval(() => {
-    const status = getJobStatus();
-    console.log(`[REFRESH] Background jobs status: ${status.length} active jobs`);
-  }, process.env.REFRESH_MONITOR_INTERVAL || 900000); // 15 minutes by default
-  
-  console.log('[REFRESH] Background refresh service initialized');
-  
-  return {
-    startRefreshJob,
-    stopRefreshJob,
-    prewarmCache,
-    startAllJobs,
-    stopAllJobs,
-    getJobStatus
-  };
+  try {
+    // Pre-warm the cache
+    const prewarmResults = await prewarmCache();
+    
+    // Log summary of pre-warming results
+    const successCount = prewarmResults.filter(r => r.success).length;
+    const pendingCount = prewarmResults.filter(r => r.reason === 'missing-table').length;
+    const failedCount = prewarmResults.filter(r => !r.success && r.reason !== 'missing-table').length;
+    
+    console.log(`[REFRESH] Pre-warming summary: ${successCount} successful, ${pendingCount} pending (missing tables), ${failedCount} failed`);
+    
+    // Start all jobs
+    startAllJobs();
+    
+    // Setup monitoring
+    setInterval(() => {
+      const status = getJobStatus();
+      console.log(`[REFRESH] Background jobs status: ${status.length} active jobs`);
+    }, process.env.REFRESH_MONITOR_INTERVAL || 900000); // 15 minutes by default
+    
+    console.log('[REFRESH] Background refresh service initialized');
+    
+    return {
+      startRefreshJob,
+      stopRefreshJob,
+      prewarmCache,
+      startAllJobs,
+      stopAllJobs,
+      getJobStatus
+    };
+  } catch (error) {
+    console.error('[REFRESH] Failed to initialize background refresh service:', error);
+    throw error;
+  }
 }
 
 module.exports = {

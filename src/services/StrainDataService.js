@@ -1,4 +1,6 @@
+
 import ApiService from './ApiService';
+import { api } from './api.service';
 
 class StrainDataService extends ApiService {
   constructor() {
@@ -60,133 +62,73 @@ class StrainDataService extends ApiService {
       }
     ];
     
-    // Get the API base URL from environment or use a default
-    this.apiBaseUrl = process.env.REACT_APP_API_URL || this.getServerUrl();
-    
     // Initialize cache for API responses
     this.cache = {};
     
-    console.log('StrainDataService initialized with API URL:', this.apiBaseUrl);
-  }
-  
-  // Get the server URL based on current window location
-  getServerUrl() {
-    // If we're in the browser, determine the server URL from the current window location
-    if (typeof window !== 'undefined') {
-      const protocol = window.location.protocol;
-      const hostname = window.location.hostname;
-      
-      // If we're running on localhost:3000 (React dev server), use port 5000 for the API
-      if (hostname === 'localhost' && window.location.port === '3000') {
-        return `${protocol}//${hostname}:5000`;
-      }
-      
-      // Otherwise, use the same origin as the current page
-      return window.location.origin;
-    }
-    
-    // Default fallback
-    return 'http://localhost:5000';
-  }
-  
-  // Get the full URL for an API endpoint
-  getApiUrl(endpoint) {
-    // Make sure endpoint starts with a slash
-    if (!endpoint.startsWith('/')) {
-      endpoint = '/' + endpoint;
-    }
-    
-    return `${this.apiBaseUrl}${endpoint}`;
-  }
-  
-  // Check if a response is HTML instead of JSON
-  isHtmlResponse(data) {
-    if (typeof data === 'string') {
-      return data.trim().toLowerCase().startsWith('<!doctype html') || 
-             data.trim().toLowerCase().startsWith('<html');
-    }
-    return false;
+    console.log('StrainDataService initialized');
   }
   
   // Make an API request with error handling and caching
-  async makeApiRequest(url, options = {}) {
-    console.log(`Making API request to: ${url}`);
+  async makeApiRequest(endpoint, options = {}) {
+    console.log(`Making API request to: ${endpoint}`);
     
-    // Generate a cache key based on the URL and options
-    const cacheKey = `${url}-${JSON.stringify(options)}`;
+    // Ensure endpoint starts with a slash
+    const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    // Generate a cache key based on the endpoint and options
+    const cacheKey = `${formattedEndpoint}-${JSON.stringify(options)}`;
     
     try {
-      // Get token from localStorage if available
-      const token = localStorage.getItem('token');
-      
-      // Set default headers if not provided
-      const headers = options.headers || {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      };
-      
-      // Add authorization header if token exists
-      if (token && !headers['Authorization']) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      // Make the fetch request
-      const response = await fetch(url, {
+      // Use the shared api instance from api.service.js
+      const response = await api.request({
+        url: formattedEndpoint,
         ...options,
-        headers,
-        // Don't use cache: 'no-cache' as we want to allow 304 responses
+        headers: {
+          ...options.headers,
+          'Accept': 'application/json' // Explicitly request JSON
+        }
       });
       
       console.log(`API Response Status: ${response.status}`);
       
-      // Handle 304 Not Modified responses
-      if (response.status === 304) {
-        console.log('Server returned 304 Not Modified, using cached data');
-        
-        // If we have cached data for this request, return it
-        if (this.cache[cacheKey]) {
-          return this.cache[cacheKey];
+      // Log the data count for debugging
+      if (response.data) {
+        if (Array.isArray(response.data)) {
+          console.log(`Received ${response.data.length} records`);
+        } else if (typeof response.data === 'object') {
+          // Handle structured response
+          let totalCount = 0;
+          for (const key in response.data) {
+            if (Array.isArray(response.data[key])) {
+              console.log(`Category ${key}: ${response.data[key].length} records`);
+              totalCount += response.data[key].length;
+            }
+          }
+          console.log(`Total records across all categories: ${totalCount}`);
         }
-        
-        // If we don't have cached data, this is unexpected
-        // Try to make a fresh request without If-None-Match header
-        console.log('No cached data found for 304 response, making fresh request');
-        
-        const freshHeaders = { ...headers };
-        delete freshHeaders['If-None-Match'];
-        delete freshHeaders['If-Modified-Since'];
-        
-        return this.makeApiRequest(url, {
-          ...options,
-          headers: freshHeaders,
-          cache: 'no-cache' // Force a fresh request
-        });
       }
       
-      // Check if response is OK (status in the range 200-299)
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-      
-      // Get the content type from the response headers
-      const contentType = response.headers.get('content-type');
-      
-      // If content type indicates HTML, log an error
+      // Check if we received HTML instead of JSON
+      const contentType = response.headers['content-type'];
       if (contentType && contentType.includes('text/html')) {
-        const text = await response.text();
-        console.error('Received HTML response instead of JSON:', text.substring(0, 100) + '...');
-        throw new Error('API returned HTML instead of JSON. Check your API routes.');
+        console.error('Received HTML response instead of JSON. Request URL:', formattedEndpoint);
+        throw new Error('Received HTML instead of expected JSON. Check API endpoint configuration.');
       }
-      
-      // Parse the JSON response
-      const data = await response.json();
       
       // Cache the response data
-      this.cache[cacheKey] = data;
+      this.cache[cacheKey] = response.data;
       
-      return data;
+      return response.data;
     } catch (error) {
       console.error('API request error:', error.message);
+      
+      // If we received HTML, log a more helpful error
+      if (error.response && error.response.headers['content-type']?.includes('text/html')) {
+        console.error('API returned HTML instead of JSON. This typically indicates:');
+        console.error('1. The API endpoint URL is incorrect');
+        console.error('2. You are hitting a frontend route instead of API route');
+        console.error('3. The server is not properly configured to serve JSON for this endpoint');
+      }
       
       // If we have cached data for this request, return it as a fallback
       if (this.cache[cacheKey]) {
@@ -207,19 +149,11 @@ class StrainDataService extends ApiService {
         return this.cache['allStrains'];
       }
       
-      // Based on server logs, the endpoint is /all-strains without the /api prefix
-      const mainEndpoint = '/all-strains';
-      console.log('Fetching strains from:', this.getApiUrl(mainEndpoint));
+      console.log('Fetching all strains');
       
       try {
-        const data = await this.makeApiRequest(this.getApiUrl(mainEndpoint), {
-          // Explicitly set cache control headers to allow 304 responses
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Cache-Control': 'max-age=300' // Allow caching for 5 minutes
-          }
-        });
+        // Try the main strains endpoint with pagination parameters to get all records
+        const data = await this.makeApiRequest('/strains?limit=200&page=1');
         
         console.log('Successfully fetched strains');
         
@@ -230,36 +164,61 @@ class StrainDataService extends ApiService {
       } catch (mainError) {
         console.error('Main endpoint failed:', mainError.message);
         
-        // Try the test endpoint as fallback
+        // Try the test endpoint as fallback with pagination parameters
         try {
-          const testEndpoint = '/api/test/strains';
-          console.log('Trying test endpoint:', this.getApiUrl(testEndpoint));
-          
-          const data = await this.makeApiRequest(this.getApiUrl(testEndpoint));
+          console.log('Trying test endpoint with pagination');
+            
+          const data = await this.makeApiRequest('/test/strains?limit=200&page=1');
           console.log('Successfully fetched strains from test endpoint');
-          
+            
           // Cache the strains data
           this.cache['allStrains'] = data;
-          
+            
           return data;
         } catch (testError) {
           console.error('Test endpoint failed:', testError.message);
           console.log('Using mock strain data');
           
-          // Cache the mock data
-          this.cache['allStrains'] = this.mockStrains;
+          // Create a structured mock data object that matches the expected format
+          const structuredMockData = {
+            normal_strains: this.mockStrains.filter(strain => strain.category === 'normal'),
+            greenhouse_strains: this.mockStrains.filter(strain => strain.category === 'greenhouse'),
+            exotic_tunnel_strains: this.mockStrains.filter(strain => strain.category === 'exotic_tunnel'),
+            indoor_strains: this.mockStrains.filter(strain => strain.category === 'indoor'),
+            medical_strains: this.mockStrains.filter(strain => strain.category === 'medical'),
+            pre_rolled: this.mockStrains.filter(strain => strain.category === 'pre_rolled'),
+            extracts_vapes: this.mockStrains.filter(strain => strain.category === 'extracts_vapes'),
+            edibles: this.mockStrains.filter(strain => strain.category === 'edibles'),
+            weekly_special: this.mockStrains.filter(strain => strain.category === 'weekly_special')
+          };
           
-          return this.mockStrains;
+          // Cache the structured mock data
+          this.cache['allStrains'] = structuredMockData;
+          
+          return structuredMockData;
         }
       }
     } catch (error) {
       console.error('Error fetching strains:', error.message);
       console.log('Using mock strain data');
       
-      // Cache the mock data
-      this.cache['allStrains'] = this.mockStrains;
+      // Create a structured mock data object as fallback
+      const structuredMockData = {
+        normal_strains: this.mockStrains.filter(strain => strain.category === 'normal'),
+        greenhouse_strains: this.mockStrains.filter(strain => strain.category === 'greenhouse'),
+        exotic_tunnel_strains: this.mockStrains.filter(strain => strain.category === 'exotic_tunnel'),
+        indoor_strains: this.mockStrains.filter(strain => strain.category === 'indoor'),
+        medical_strains: this.mockStrains.filter(strain => strain.category === 'medical'),
+        pre_rolled: this.mockStrains.filter(strain => strain.category === 'pre_rolled'),
+        extracts_vapes: this.mockStrains.filter(strain => strain.category === 'extracts_vapes'),
+        edibles: this.mockStrains.filter(strain => strain.category === 'edibles'),
+        weekly_special: this.mockStrains.filter(strain => strain.category === 'weekly_special')
+      };
       
-      return this.mockStrains;
+      // Cache the structured mock data
+      this.cache['allStrains'] = structuredMockData;
+      
+      return structuredMockData;
     }
   }
   
@@ -282,26 +241,47 @@ class StrainDataService extends ApiService {
         return this.cache[cacheKey];
       }
       
-      // Try to find the strain in all strains
-      const allStrains = await this.fetchAllStrains();
-      const strain = allStrains.find(s => s.id === parseInt(id));
-      
-      if (strain) {
+      // Try to fetch the strain directly
+      try {
+        const data = await this.makeApiRequest(`/strains/${id}`);
         // Cache the strain data
-        this.cache[cacheKey] = strain;
-        return strain;
-      }
+        this.cache[cacheKey] = data;
+        return data;
+      } catch (directError) {
+        console.error(`Direct fetch for strain ID ${id} failed:`, directError.message);
+        
+        // Try to find the strain in all strains
+        const allStrains = await this.fetchAllStrains();
+        let strain = null;
+        
+        // Search through all categories in the structured response
+        for (const categoryKey in allStrains) {
+          if (Array.isArray(allStrains[categoryKey])) {
+            const foundStrain = allStrains[categoryKey].find(s => s.id === parseInt(id));
+            if (foundStrain) {
+              strain = foundStrain;
+              break;
+            }
+          }
+        }
+        
+        if (strain) {
+          // Cache the strain data
+          this.cache[cacheKey] = strain;
+          return strain;
+        }
       
-      // If not found, try to find it in mock data
-      const mockStrain = this.mockStrains.find(s => s.id === parseInt(id));
-      if (mockStrain) {
-        console.log('Using mock strain data for ID:', id);
-        // Cache the mock strain
-        this.cache[cacheKey] = mockStrain;
-        return mockStrain;
+        // If not found, try to find it in mock data
+        const mockStrain = this.mockStrains.find(s => s.id === parseInt(id));
+        if (mockStrain) {
+          console.log('Using mock strain data for ID:', id);
+          // Cache the mock strain
+          this.cache[cacheKey] = mockStrain;
+          return mockStrain;
+        }
+        
+        throw new Error(`Strain with ID ${id} not found`);
       }
-      
-      throw new Error(`Strain with ID ${id} not found`);
     } catch (error) {
       console.error(`Error fetching strain with ID ${id}:`, error.message);
       
@@ -326,13 +306,68 @@ class StrainDataService extends ApiService {
         return this.cache[cacheKey];
       }
       
-      const allStrains = await this.fetchAllStrains();
-      const categoryStrains = allStrains.filter(strain => strain.category === category);
+      // Try to fetch strains by category directly
+      try {
+        const data = await this.makeApiRequest(`/strains/category/${category}`);
+        // Cache the category strains
+        this.cache[cacheKey] = data;
+        return data;
+      } catch (directError) {
+        console.error(`Direct fetch for category ${category} failed:`, directError.message);
+        
+        const allStrains = await this.fetchAllStrains();
       
-      // Cache the category strains
-      this.cache[cacheKey] = categoryStrains;
-      
-      return categoryStrains;
+        // Handle the new structured response format
+        // Map category names to the property names in the response
+        const categoryMapping = {
+          'normal': 'normal_strains',
+          'greenhouse': 'greenhouse_strains',
+          'exotic_tunnel': 'exotic_tunnel_strains',
+          'indoor': 'indoor_strains',
+          'medical': 'medical_strains',
+          'pre_rolled': 'pre_rolled',
+          'extracts_vapes': 'extracts_vapes',
+          'edibles': 'edibles',
+          'weekly_special': 'weekly_special'
+        };
+        
+        // Get the property name for this category
+        const propertyName = categoryMapping[category] || category;
+        
+        // Check if the category exists in the response
+        if (allStrains[propertyName]) {
+          // Cache the category strains
+          this.cache[cacheKey] = allStrains[propertyName];
+          return allStrains[propertyName];
+        }
+        
+        // Fallback to filtering if the category doesn't exist in the structured response
+        // This is for backward compatibility
+        let categoryStrains = [];
+        
+        // First try to find the category in the structured response
+        Object.values(allStrains).forEach(strainArray => {
+          if (Array.isArray(strainArray)) {
+            const matchingStrains = strainArray.filter(strain => strain.category === category);
+            categoryStrains = [...categoryStrains, ...matchingStrains];
+          }
+        });
+        
+        // If we found strains, return them
+        if (categoryStrains.length > 0) {
+          // Cache the category strains
+          this.cache[cacheKey] = categoryStrains;
+          return categoryStrains;
+        }
+        
+        // Last resort: use mock data
+        const mockCategoryStrains = this.mockStrains.filter(strain => strain.category === category);
+        
+        // Cache the mock category strains
+        this.cache[cacheKey] = mockCategoryStrains;
+        
+        return mockCategoryStrains;
+      }
     } catch (error) {
       console.error(`Error fetching ${category} strains:`, error.message);
       const mockCategoryStrains = this.mockStrains.filter(strain => strain.category === category);
@@ -361,6 +396,35 @@ class StrainDataService extends ApiService {
         // Cache the strain
         this.cache[cacheKey] = strain;
         return strain;
+      }
+      
+      // If not found in the category, try to find it in all strains
+      const allStrains = await this.fetchAllStrains();
+      
+      // Map category names to the property names in the response
+      const categoryMapping = {
+        'normal': 'normal_strains',
+        'greenhouse': 'greenhouse_strains',
+        'exotic_tunnel': 'exotic_tunnel_strains',
+        'indoor': 'indoor_strains',
+        'medical': 'medical_strains',
+        'pre_rolled': 'pre_rolled',
+        'extracts_vapes': 'extracts_vapes',
+        'edibles': 'edibles',
+        'weekly_special': 'weekly_special'
+      };
+      
+      // Get the property name for this category
+      const propertyName = categoryMapping[category] || category;
+      
+      // Check if the category exists in the response and search for the strain
+      if (allStrains[propertyName]) {
+        const foundStrain = allStrains[propertyName].find(s => s.id === parseInt(id));
+        if (foundStrain) {
+          // Cache the strain
+          this.cache[cacheKey] = foundStrain;
+          return foundStrain;
+        }
       }
       
       // If not found in the category, try to find it in mock data
@@ -398,10 +462,9 @@ class StrainDataService extends ApiService {
         return this.cache['userMembership'];
       }
       
-      const endpoint = '/api/user/membership';
-      console.log('Fetching user membership from:', this.getApiUrl(endpoint));
+      console.log('Fetching user membership');
       
-      const data = await this.makeApiRequest(this.getApiUrl(endpoint));
+      const data = await this.makeApiRequest('/user/membership');
       console.log('Successfully fetched user membership');
       
       // Cache the membership data
@@ -432,10 +495,9 @@ class StrainDataService extends ApiService {
   // Check API health
   async checkApiHealth() {
     try {
-      const healthEndpoint = '/api/health';
-      console.log('Checking API health:', this.getApiUrl(healthEndpoint));
+      console.log('Checking API health');
       
-      const data = await this.makeApiRequest(this.getApiUrl(healthEndpoint));
+      const data = await this.makeApiRequest('/health');
       console.log('API health check result:', data);
       
       return {
@@ -459,4 +521,8 @@ class StrainDataService extends ApiService {
   }
 }
 
-export default new StrainDataService();
+// Create an instance of the service
+const strainDataServiceInstance = new StrainDataService();
+
+// Export the instance as the default export
+export default strainDataServiceInstance;

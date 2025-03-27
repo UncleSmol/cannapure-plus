@@ -1,3 +1,4 @@
+
 /**
  * Strain Data Service
  * Handles fetching strain data from the API
@@ -5,14 +6,56 @@
 
 /**
  * Fetches all strains from the API with improved error handling and retry logic
- * @returns {Promise<Object>} Object containing categorized strain data
+ * @param {boolean} forceRefresh - If true, bypasses cache and forces fresh data fetch
+ * @returns {Promise<Object>} Object containing strain data
  */
-const fetchAllStrains = async () => {
+const fetchAllStrains = async (forceRefresh = false) => {
+  // Clear cache if force refresh is requested
+  if (forceRefresh) {
+    try {
+      localStorage.removeItem('strain_data_cache');
+      localStorage.removeItem('strain_data_timestamp');
+      
+      // Also clear category-specific cached data
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (
+          key.startsWith('category-') || 
+          key.startsWith('weeklyspecials_tag-') ||
+          key.includes('-timestamp')
+        )) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      console.log('Cache cleared for fresh data fetch');
+    } catch (cacheError) {
+      console.warn('Failed to clear cache:', cacheError);
+    }
+  } else {
+    // Check for cached data when not forcing refresh
+    try {
+      const cachedData = localStorage.getItem('strain_data_cache');
+      const timestamp = localStorage.getItem('strain_data_timestamp');
+      
+      if (cachedData && timestamp) {
+        const age = Date.now() - parseInt(timestamp);
+        const MAX_AGE = 15 * 60 * 1000; // 15 minutes (reduced from 1 day)
+        
+        if (age < MAX_AGE) {
+          console.log('Using cached strain data from', new Date(parseInt(timestamp)).toLocaleString());
+          return JSON.parse(cachedData);
+        }
+      }
+    } catch (cacheError) {
+      console.error('Error retrieving cached data:', cacheError);
+    }
+  }
+
   // Number of retry attempts
   const MAX_RETRIES = 3;
   let retryCount = 0;
-  let lastError = null;
-
+  
   while (retryCount < MAX_RETRIES) {
     try {
       // Add a timeout for fetch to prevent hanging requests
@@ -31,17 +74,26 @@ const fetchAllStrains = async () => {
         'Origin': window.location.origin
       };
       
+      // Add cache control headers if forcing refresh
+      if (forceRefresh) {
+        headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+        headers['Pragma'] = 'no-cache';
+        headers['X-Force-Refresh'] = 'true';
+      }
+      
       // Add authorization header if token exists
       if (accessToken) {
         headers['Authorization'] = `Bearer ${accessToken}`;
         console.log('Using authentication token for request');
-      } else {
-        console.warn('No authentication token found, request may be rejected');
       }
 
       // Determine the API URL - try to use environment variable if available
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const endpoint = `${apiUrl}/all-strains`;
+      const apiUrl = process.env.REACT_APP_API_URL || window.location.origin + '/api';
+      
+      // Add timestamp to bust cache if forcing refresh
+      const endpoint = forceRefresh 
+        ? `${apiUrl}/all-strains?_=${Date.now()}`
+        : `${apiUrl}/all-strains`;
       
       console.log(`Making request to: ${endpoint}`);
       
@@ -49,103 +101,34 @@ const fetchAllStrains = async () => {
         method: 'GET',
         signal: controller.signal,
         headers: headers,
-        credentials: 'include', // Include cookies if they exist
-        mode: 'cors' // Explicitly request CORS mode
+        credentials: 'include' // Include cookies if they exist
       });
       
       clearTimeout(timeoutId);
-    
-      // Log response status to help diagnose issues
-      console.log('API Response Status:', response.status);
       
-      // Check if the response is ok (status in the range 200-299)
+      // Check if the response is ok
       if (!response.ok) {
         console.error('API response not OK:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        
-        // Handle authentication errors specifically
-        if (response.status === 401) {
-          console.error('Authentication error: You need to be logged in to access this data');
-          // Redirect to login if desired
-          // window.location.hash = "userAuthenticationPage";
-          
-          // Clear invalid token
-          localStorage.removeItem('accessToken');
-          
-          throw new Error(`Authentication failed: ${response.status}`);
-        }
-        
         throw new Error(`API responded with status: ${response.status}`);
       }
-    
-      // For debugging, get the raw text first
-      const rawText = await response.text();
-      console.log('Raw API response:', rawText.substring(0, 200) + (rawText.length > 200 ? '...' : ''));
-    
-    // Only try to parse if we have content
-    if (!rawText || rawText.trim() === '') {
-      console.error('Empty response from API');
-      return {};
-    }
-    
-    // Try to parse the JSON
-    let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch (parseError) {
-      console.error('JSON parsing error:', parseError);
-      console.error('Problematic JSON:', rawText.substring(0, 200));
-      return {};
-    }
-    
-    console.log('Data parsed successfully, sample:', data.slice(0, 2));
-    
-    // Ensure data is an array before filtering
-    if (!Array.isArray(data)) {
-      console.error('API did not return an array of strains:', typeof data);
-      return {};
-    }
-    
-    // Add IDs if they don't exist (using index as fallback)
-    const dataWithIds = data.map((strain, index) => ({
-      ...strain,
-      id: strain.id || `strain-${index}` // Use existing ID or generate one
-    }));
-
-    // Get all strains with special = true across categories
-    const weekly_specials_tag = dataWithIds.filter(strain => strain.special === true);
-
-    // Organize remaining data by category
-    const organizedData = {
-      weekly_specials_tag: weekly_specials_tag,
-      normal_strains: dataWithIds.filter(strain => strain.category === 'normal'),
-      greenhouse_strains: dataWithIds.filter(strain => strain.category === 'greenhouse'),
-      exotic_tunnel_strains: dataWithIds.filter(strain => strain.category === 'exotic'),
-      indoor_strains: dataWithIds.filter(strain => strain.category === 'indoor'),
-      medical_strains: dataWithIds.filter(strain => strain.category === 'medical'),
-      pre_rolled: dataWithIds.filter(strain => strain.category === 'prerolled'),
-      extracts_vapes: dataWithIds.filter(strain => strain.category === 'extracts'),
-      edibles: dataWithIds.filter(strain => strain.category === 'edibles')
-    };
-
-    // Cache the data for offline use
-    try {
-      localStorage.setItem('strain_data_cache', JSON.stringify(organizedData));
-      localStorage.setItem('strain_data_timestamp', Date.now().toString());
-    } catch (cacheError) {
-      console.warn('Failed to cache strain data:', cacheError);
-    }
-
-    return organizedData;
-    } catch (error) {
-      lastError = error;
-      console.error(`Error fetching strains (attempt ${retryCount + 1}):`, error);
       
-      // If this was an abort error (timeout), log it specifically
-      if (error.name === 'AbortError') {
-        console.error('Request timed out after 15 seconds');
+      // Parse the response
+      const data = await response.json();
+      
+      // Cache the data (unless forcing refresh)
+      if (!forceRefresh) {
+        try {
+          localStorage.setItem('strain_data_cache', JSON.stringify(data));
+          localStorage.setItem('strain_data_timestamp', Date.now().toString());
+          console.log('Strain data cached successfully');
+        } catch (cacheError) {
+          console.warn('Failed to cache strain data:', cacheError);
+        }
       }
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching strains (attempt ${retryCount + 1}):`, error);
       
       // Increment retry count
       retryCount++;
@@ -159,27 +142,92 @@ const fetchAllStrains = async () => {
     }
   }
   
-  // All retries failed, try to return cached data if available
+  // If all retries fail, try to return cached data if available (even if it's old)
   try {
     const cachedData = localStorage.getItem('strain_data_cache');
-    const timestamp = localStorage.getItem('strain_data_timestamp');
-    
-    if (cachedData && timestamp) {
-      const age = Date.now() - parseInt(timestamp);
-      const ONE_DAY = 24 * 60 * 60 * 1000;
-      
-      if (age < ONE_DAY) {
-        console.log('Returning cached strain data from', new Date(parseInt(timestamp)).toLocaleString());
-        return JSON.parse(cachedData);
-      }
+    if (cachedData) {
+      console.warn('Using stale cached data after failed API requests');
+      return JSON.parse(cachedData);
     }
-  } catch (cacheError) {
-    console.error('Error retrieving cached data:', cacheError);
+  } catch (error) {
+    console.error('Failed to retrieve cached data:', error);
   }
   
-  console.error(`All ${MAX_RETRIES} attempts to fetch strains failed:`, lastError);
-  return {};
+  // Return empty fallback data structure if everything fails
+  return getFallbackData();
 };
 
-export { fetchAllStrains };
+/**
+ * Returns empty structured object as fallback when no data is available
+ * @returns {Object} Empty structured object
+ */
+const getFallbackData = () => {
+  console.warn('Using empty fallback data');
+  
+  return {
+    normal_strains: [],
+    greenhouse_strains: [],
+    exotic_tunnel_strains: [],
+    indoor_strains: [],
+    medical_strains: [],
+    pre_rolled: [],
+    extracts_vapes: [],
+    edibles: [],
+    weekly_special: []
+  };
+};
 
+/**
+ * Clears all strain-related cache from localStorage
+ * @returns {Object} Result of the operation
+ */
+const clearStrainDataCache = () => {
+  try {
+    // Find and clear all strain-related cache
+    const keysToRemove = [];
+    
+    // Main strain data cache
+    keysToRemove.push('strain_data_cache', 'strain_data_timestamp');
+    
+    // Category-specific cache
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (
+        key.startsWith('category-') || 
+        key.startsWith('weeklyspecials_tag-') ||
+        key.includes('-timestamp')
+      )) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    // Remove all identified keys
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    console.log(`Cleared ${keysToRemove.length} cached items`);
+    
+    return {
+      success: true,
+      count: keysToRemove.length,
+      message: `Cleared ${keysToRemove.length} cached items`
+    };
+  } catch (error) {
+    console.error('Failed to clear cache:', error);
+    return {
+      success: false,
+      error: error.message,
+      message: 'Failed to clear cache'
+    };
+  }
+};
+
+// For backward compatibility, set default export for existing imports
+const StrainDataService = {
+  fetchAllStrains,
+  clearStrainDataCache
+};
+
+export default StrainDataService;
+
+// For new code, also export functions individually
+export { fetchAllStrains, clearStrainDataCache };

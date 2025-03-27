@@ -1,247 +1,324 @@
-/* BudBar Page Styles */
-.bud-bar-page {
-  padding: var(--space-4);
-  padding-top: calc(var(--header-height) + 20px);
-  animation: fadeIn var(--transition-normal);
-  color: var(--white);
-}
+/* Add or update these styles in your budbar.css */
 
-.bud-bar-page__title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: var(--text-4xl);
-  color: var(--white);
-  text-align: center;
-  margin-bottom: var(--space-6);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.bud-bar-page__content {
-  max-width: var(--max-width);
-  margin: 0 auto;
-}
-
-.bud-bar-page__description {
-  text-align: center;
-  color: var(--light-gray);
-  margin-bottom: var(--space-6);
-  font-size: var(--text-lg);
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Category Section Styles */
-.category-section {
-  margin-bottom: var(--space-8);
-  position: relative;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-}
-
-.category-section__heading {
-  font-family: 'Montserrat', sans-serif;
-  font-size: var(--text-2xl);
-  color: var(--white);
-  margin-bottom: var(--space-3);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.category-section__description {
-  color: var(--light-gray);
-  margin-bottom: var(--space-4);
-  font-size: var(--text-base);
-}
-
-/* Card Holder - Horizontal Scrolling */
-.category-section__card-holder {
-  display: flex;
-  overflow-x: auto;
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-green) var(--dark-green);
-}
-
-.category-section.closed .category-section__card-holder,
-.category-section.closed .category-section__text {
-  display: none;
-}
-
-.category-section__card-holder::-webkit-scrollbar {
-  height: 8px;
-}
-
-.category-section__card-holder::-webkit-scrollbar-track {
-  background: var(--dark-green);
-  border-radius: var(--radius-full);
-}
-
-.category-section__card-holder::-webkit-scrollbar-thumb {
-  background-color: var(--accent-green);
-  border-radius: var(--radius-full);
-}
-
-/* Open/Close Button */
-.opn-cls-btn {
-  position: absolute;
-  top: var(--space-4);
+.bud-bar-top-controls {
+  position: fixed;
+  top: calc(var(--header-height) + var(--space-4));
+  margin-top: 50px;
+  margin-bottom: 10px;
   right: var(--space-4);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  cursor: pointer;
   display: flex;
+  flex-flow: row-reverse;
   align-items: center;
-  justify-content: center;
-  transition: all var(--transition-normal);
+  gap: 0.75rem;
+  z-index: var(--z-sticky);
+  transition: opacity 0.3s ease;
+  will-change: opacity;
 }
 
-.opn-cls-btn:hover {
+.bud-bar-top-controls:hover {
+  opacity: 1 !important;
+}
+
+/* Enhanced hover effects for both controls when at full opacity */
+.bud-bar-top-controls[style*="opacity: 1"] .store-filter__button,
+.bud-bar-top-controls[style*="opacity: 1"] .refresh-data-button {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bud-bar-top-controls[style*="opacity: 1"] .store-filter__button:hover,
+.bud-bar-top-controls[style*="opacity: 1"] .refresh-data-button:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Subtle glow effect when returning to full opacity */
+@keyframes fullOpacityGlow {
+  0% { box-shadow: 0 0 0 rgba(var(--primary-green-rgb), 0); }
+  50% { box-shadow: 0 0 8px rgba(var(--primary-green-rgb), 0.3); }
+  100% { box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); }
+}
+
+.bud-bar-top-controls.user-interacted .store-filter__button,
+.bud-bar-top-controls.user-interacted .refresh-data-button {
+  animation: fullOpacityGlow 0.5s ease;
+}
+
+/* Debug panel styles */
+.debug-panel {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--accent-green);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  margin: 10px 0;
+  color: white;
+  font-family: monospace;
+  font-size: 0.85rem;
+  max-width: 600px;
+}
+
+.debug-panel h4 {
+  margin-top: 0;
+  color: var(--accent-green);
+  border-bottom: 1px solid var(--accent-green);
+  padding-bottom: 5px;
+}
+
+.debug-panel ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.debug-panel li {
+  line-height: 1.4;
+}
+
+.debug-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.debug-actions button {
+  background: var(--dark-green);
+  color: white;
+  border: 1px solid var(--accent-green);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.debug-actions button:hover {
   background: var(--accent-green);
 }
 
-.opn-cls-btn::before {
-  content: "";
-  display: block;
-  width: 12px;
-  height: 2px;
-  background: var(--white);
-  position: absolute;
+/* Count badge removed as it's no longer needed */
+
+/* Category section styles */
+.category-section {
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.opn-cls-btn::after {
-  content: "";
-  display: block;
-  width: 2px;
-  height: 12px;
-  background: var(--white);
+/* Styling for closed and open states */
+.category-section.closed {
+  max-height: 80px; /* Adjust based on your heading height */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-section.open {
+  max-height: 2000px; /* Large value to accommodate all content */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Category heading styles */
+.category-section__heading {
+  padding: 1rem 3rem 1rem 1rem;
+  margin: 0;
+  cursor: pointer;
+  position: relative;
+  font-size: 1.25rem;
+  transition: color 0.2s ease;
+  color: var(--white); /* Ensure consistent text color */
+}
+
+.category-section__heading:hover {
+  color: var(--accent-green); /* Using theme color */
+}
+
+/* Description styles */
+.category-section__description {
+  padding: 0 1rem;
+  margin-top: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  color: var(--white); /* Ensure consistent text color */
+}
+
+/* Open/close button styles */
+.category-section__btn {
   position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  z-index: 2;
   transition: transform 0.3s ease;
 }
 
-.category-section.closed .opn-cls-btn::after {
-  transform: rotate(90deg);
+/* Plus/minus icon styles */
+.opn-cls-btn:before,
+.opn-cls-btn:after {
+  content: '';
+  position: absolute;
+  background-color: var(--white); /* Make sure the plus/minus icons are white */
+  transition: all 0.3s ease;
 }
 
-/* Disclaimer */
-.bud-bar-page__disclaimer {
-  text-align: center;
-  color: var(--light-gray);
-  margin-top: var(--space-6);
-  font-size: var(--text-sm);
-  padding: var(--space-3);
-  background: var(--glass-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-border);
+.opn-cls-btn:before {
+  width: 16px;
+  height: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .category-section__heading {
-    font-size: var(--text-xl);
-  }
-
-  .category-section__description {
-    font-size: var(--text-sm);
-  }
-
-  .bud-bar-page__title {
-    font-size: var(--text-3xl);
-  }
-
-  .category-section__card-holder {
-    gap: var(--space-2);
-  }
+.opn-cls-btn:after {
+  width: 2px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-/* Add these to your budbar.css */
-
-/* Lab Title Styles */
-.lab-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: var(--text-4xl);
-  color: var(--white);
-  text-align: left;
-  margin-bottom: var(--space-4);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  width: 100%;
-
+/* When button is in open state, hide the vertical line to create a minus sign */
+.opn-cls-btn.open:after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  opacity: 0;
 }
 
-.lab-subtitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: var(--text-2xl);
-  color: var(--white);
-  text-align: left;
-  margin-bottom: var(--space-2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  width: 100%;
+/* Rotate the button when open */
+.opn-cls-btn.open {
+  transform: rotate(180deg);
 }
 
-.lab-description {
-  text-align: left;
-  color: var(--light-gray);
-  margin-bottom: var(--space-4);
-  font-size: var(--text-lg);
-  max-width: 800px;
- 
-}
-
-/* Weekly specials_tag Section */
-.weekly_specials_tag {
-  margin-bottom: var(--space-8);
-  position: relative;
-  overflow-y: hidden;
-}
-
-.weekly_specials_tag .__content-wrapper {
+/* Card holder container styles */
+.category-section__card-holder {
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  align-items: end;
-  justify-content: flex-start;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;  overscroll-behavior-y: contain;  scrollbar-width: thin;
-  scrollbar-color: var(--accent-green) var(--dark-green);
+  padding: 1rem;
+  gap: 1rem;
+  scrollbar-width: thin;
+  transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-.weekly_specials_tag .__content-wrapper::-webkit-scrollbar {
-  height: 8px;
+.category-section__card-holder.hidden {
+  opacity: 0;
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-.weekly_specials_tag .__content-wrapper::-webkit-scrollbar-track {
-  background: var(--dark-green);
-  border-radius: var(--radius-full);
+.category-section__card-holder.visible {
+  opacity: 1;
+  height: auto;
+  padding: 1rem;
 }
 
-.weekly_specials_tag .__content-wrapper::-webkit-scrollbar-thumb {
-  background-color: var(--accent-green);
-  border-radius: var(--radius-full);
-}
-
-.weekly_specials_tag .__content-wrapper .strain-card {
-  flex: 0 0 auto;
-  width: var(--card-width);
-}
-
-/* Lab Categories Container */
-.lab-categories {
+/* Empty state styling */
+.empty-state,
+.empty-category {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  min-width: 250px;
+  color: var(--light-gray);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
 }
 
-/* Category Section Closed State */
-.category-section.closed .category-section__card-holder,
-.category-section.closed .category-section__text {
-  display: none;
+.empty-category {
+  min-height: 150px;
+  width: 100%;
+}
+
+/* Error message */
+.error-message {
+  background: rgba(220, 53, 69, 0.1);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  margin: 15px 0;
+  text-align: center;
+}
+
+/* Scroll spacer */
+.scroll-spacer {
+  flex: 0 0 var(--space-4);
+  min-width: var(--space-4);
+}
+
+/* Section title */
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--white);
+  margin: 1.5rem 0 1rem 0;
+  padding-left: var(--space-4);
+}
+
+/* Ensure other text elements have the right color */
+.lab-title, 
+.lab-description {
+  color: var(--white);
+  width: max-content;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* For screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Animation for expanding/collapsing */
+@keyframes expand {
+  from { max-height: 80px; }
+  to { max-height: 2000px; }
+}
+
+@keyframes collapse {
+  from { max-height: 2000px; }
+  to { max-height: 80px; }
+}
+
+.category-section.open {
+  animation: expand 0.3s ease forwards;
+}
+
+.category-section.closed {
+  animation: collapse 0.3s ease forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bud-bar-top-controls {
+    gap: 0.5rem;
+  }
+  
+  .category-section__heading {
+    font-size: 1.1rem;
+    padding: 0.8rem 2.5rem 0.8rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bud-bar-top-controls {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .category-section__card-holder {
+    padding: 0.8rem;
+    gap: 0.8rem;
+  }
 }

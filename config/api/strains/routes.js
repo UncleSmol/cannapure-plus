@@ -1,5 +1,9 @@
 const express = require('express');
-const strainsAPI = require('./index');
+const strainController = require('./controller');
+const { validateStrainFilters, validateStrainId, validateCbdParam, 
+        validateConditionParam, validateStrainBody } = require('../validators/strainValidator');
+const { validateResults } = require('../middleware/validation');
+const { verifyToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -28,273 +32,109 @@ const logResponse = (req, data) => {
 };
 
 /**
+ * Middleware to log and forward response
+ */
+const withLogging = (handler) => async (req, res, next) => {
+  try {
+    // Store the original res.json function
+    const originalJson = res.json;
+    
+    // Override res.json to log the response
+    res.json = function(data) {
+      logResponse(req, data);
+      return originalJson.call(this, data);
+    };
+    
+    await handler(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Public routes
+/**
  * @route GET /api/strains
  * @desc Get all strains with filtering and pagination
- * @access Private
+ * @access Public
  */
-router.get('/', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains with query:`, req.query);
-    
-    const options = {
-      limit: req.query.limit,
-      offset: req.query.offset,
-      type: req.query.type,
-      thcMin: req.query.thcMin,
-      thcMax: req.query.thcMax,
-      cbdMin: req.query.cbdMin,
-      cbdMax: req.query.cbdMax,
-      sortBy: req.query.sortBy,
-      sortDir: req.query.sortDir
-    };
-    
-    const result = await strainsAPI.getAllStrains(options);
-    
-    // Log the response
-    logResponse(req, result);
-    
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * @route GET /api/strains/:type
- * @desc Get all strains of a specific type
- * @access Private
- */
-router.get('/:type', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/${req.params.type} with query:`, req.query);
-    
-    const options = {
-      limit: req.query.limit,
-      offset: req.query.offset,
-      minPrice: req.query.minPrice,
-      maxPrice: req.query.maxPrice,
-      location: req.query.location,
-      sortBy: req.query.sortBy,
-      sortDir: req.query.sortDir
-    };
-    
-    const result = await strainsAPI.getStrains(req.params.type, options);
-    
-    // Log the response
-    logResponse(req, result);
-    
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * @route GET /api/strains/:type/:id
- * @desc Get strain by ID
- * @access Private
- */
-router.get('/:type/:id', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/${req.params.type}/${req.params.id}`);
-    
-    const strain = await strainsAPI.getStrainById(req.params.type, req.params.id);
-    
-    // Log the response
-    logResponse(req, strain);
-    
-    res.json(strain);
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * @route GET /api/strains/:type/cannabis/:cannabisType
- * @desc Get strains by cannabis type (Indica, Sativa, Hybrid)
- * @access Private
- */
-router.get('/:type/cannabis/:cannabisType', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/${req.params.type}/cannabis/${req.params.cannabisType}`);
-    
-    const strains = await strainsAPI.getStrainsByType(req.params.type, req.params.cannabisType);
-    
-    // Log the response
-    logResponse(req, strains);
-    
-    res.json(strains);
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * @route GET /api/strains/:type/location/:location
- * @desc Get strains by location
- * @access Private
- */
-router.get('/:type/location/:location', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/${req.params.type}/location/${req.params.location}`);
-    
-    const strains = await strainsAPI.getStrainsByLocation(req.params.type, req.params.location);
-    
-    // Log the response
-    logResponse(req, strains);
-    
-    res.json(strains);
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * @route GET /api/strains/:type/specials
- * @desc Get special strains
- * @access Private
- */
-router.get('/:type/specials', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/${req.params.type}/specials`);
-    
-    const strains = await strainsAPI.getSpecialStrains(req.params.type);
-    
-    // Log the response
-    logResponse(req, strains);
-    
-    res.json(strains);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/', 
+  validateStrainFilters, 
+  validateResults,
+  withLogging(strainController.getStrains)
+);
 
 /**
  * @route GET /api/strains/medical/cbd/:minCbd
  * @desc Get medical strains by minimum CBD content
- * @access Private
+ * @access Public
  */
-router.get('/medical/cbd/:minCbd', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/medical/cbd/${req.params.minCbd}`);
-    
-    const minCbd = parseFloat(req.params.minCbd);
-    
-    if (isNaN(minCbd)) {
-      return res.status(400).json({ 
-        error: { message: 'Invalid CBD percentage', code: 'INVALID_CBD_VALUE' } 
-      });
-    }
-    
-    const strains = await strainsAPI.getMedicalStrainsByCbd(minCbd);
-    
-    // Log the response
-    logResponse(req, strains);
-    
-    res.json(strains);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/medical/cbd/:minCbd', 
+  validateCbdParam, 
+  validateResults,
+  withLogging(strainController.getMedicalStrainsByCbd)
+);
 
 /**
  * @route GET /api/strains/medical/condition/:condition
  * @desc Get medical strains by condition
- * @access Private
+ * @access Public
  */
-router.get('/medical/condition/:condition', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] GET /api/strains/medical/condition/${req.params.condition}`);
-    
-    const strains = await strainsAPI.getMedicalStrainsByCondition(req.params.condition);
-    
-    // Log the response
-    logResponse(req, strains);
-    
-    res.json(strains);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/medical/condition/:condition', 
+  validateConditionParam, 
+  validateResults,
+  withLogging(strainController.getMedicalStrainsByCondition)
+);
 
+/**
+ * @route GET /api/strains/:id
+ * @desc Get strain by ID
+ * @access Public
+ */
+router.get('/:id', 
+  validateStrainId, 
+  validateResults,
+  withLogging(strainController.getStrainById)
+);
+
+// Protected routes (Admin only)
 /**
  * @route POST /api/strains
  * @desc Create a new strain
- * @access Private
+ * @access Private (Admin only)
  */
-router.post('/', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] POST /api/strains with body:`, req.body);
-    
-    // Check for admin role
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ 
-        error: { message: 'Only admins can create strains', code: 'PERMISSION_DENIED' } 
-      });
-    }
-    
-    const strain = await strainsAPI.createStrain(req.body);
-    
-    // Log the response
-    logResponse(req, strain);
-    
-    res.status(201).json(strain);
-  } catch (error) {
-    next(error);
-  }
-});
+router.post('/', 
+  verifyToken, 
+  requireRole('admin'),
+  validateStrainBody,
+  validateResults,
+  withLogging(strainController.createStrain)
+);
 
 /**
- * @route PUT /api/strains/:type/:id
+ * @route PUT /api/strains/:id
  * @desc Update a strain
- * @access Private
+ * @access Private (Admin only)
  */
-router.put('/:type/:id', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] PUT /api/strains/${req.params.type}/${req.params.id} with body:`, req.body);
-    
-    // Check for admin role
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ 
-        error: { message: 'Only admins can update strains', code: 'PERMISSION_DENIED' } 
-      });
-    }
-    
-    const strain = await strainsAPI.updateStrain(req.params.type, req.params.id, req.body);
-    
-    // Log the response
-    logResponse(req, strain);
-    
-    res.json(strain);
-  } catch (error) {
-    next(error);
-  }
-});
+router.put('/:id', 
+  verifyToken, 
+  requireRole('admin'),
+  validateStrainId, 
+  validateStrainBody,
+  validateResults,
+  withLogging(strainController.updateStrain)
+);
 
 /**
- * @route DELETE /api/strains/:type/:id
+ * @route DELETE /api/strains/:id
  * @desc Delete a strain
- * @access Private
+ * @access Private (Admin only)
  */
-router.delete('/:type/:id', async (req, res, next) => {
-  try {
-    console.log(`[API REQUEST] DELETE /api/strains/${req.params.type}/${req.params.id}`);
-    
-    // Check for admin role
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ 
-        error: { message: 'Only admins can delete strains', code: 'PERMISSION_DENIED' } 
-      });
-    }
-    
-    await strainsAPI.deleteStrain(req.params.type, req.params.id);
-    
-    console.log(`[API RESPONSE] Successfully deleted strain ${req.params.id}`);
-    
-    res.status(204).end();
-  } catch (error) {
-    next(error);
-  }
-});
+router.delete('/:id', 
+  verifyToken, 
+  requireRole('admin'),
+  validateStrainId, 
+  validateResults,
+  withLogging(strainController.deleteStrain)
+);
 
 module.exports = router;
