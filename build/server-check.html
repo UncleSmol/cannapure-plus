@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Status Check</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .result {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .warning {
+      background-color: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #856404;
+    }
+    .info {
+      background-color: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0069d9;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    #results {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Server Connection Check</h1>
+  <p>This tool helps diagnose connection issues with your backend server.</p>
+  
+  <div>
+    <button onclick="checkServer()">Check Server Status</button>
+    <button onclick="checkAPIEndpoint('/api/test')">Check API Test Endpoint</button>
+    <button onclick="checkAPIEndpoint('/api/health')">Check API Health Endpoint</button>
+    <button onclick="checkAPIEndpoint('/status')">Check Status Endpoint</button>
+    <button onclick="checkWithFetch()">Check with Fetch API</button>
+    <button onclick="clearResults()">Clear Results</button>
+  </div>
+  
+  <div id="results"></div>
+  
+  <script>
+    function addResult(message, type = 'info', data = null) {
+      const results = document.getElementById('results');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `result ${type}`;
+      
+      const timestamp = new Date().toLocaleTimeString();
+      resultDiv.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+      
+      if (data) {
+        const pre = document.createElement('pre');
+        pre.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        resultDiv.appendChild(pre);
+      }
+      
+      results.prepend(resultDiv);
+    }
+    
+    function clearResults() {
+      document.getElementById('results').innerHTML = '';
+      addResult('Results cleared', 'info');
+    }
+    
+    async function checkServer() {
+      addResult('Checking server status...', 'info');
+      
+      try {
+        // Try a no-cors request to check if server is responding at all
+        const response = await fetch('http://localhost:5000/status', {
+          method: 'GET',
+          mode: 'no-cors',
+          cache: 'no-cache'
+        });
+        
+        addResult('Server appears to be running! Response type: ' + response.type, 'success');
+        
+        // This won't return meaningful data due to no-cors policy
+        // but at least we know server responded
+      } catch (error) {
+        addResult('Server connection failed!', 'error', error.toString());
+      }
+    }
+    
+    async function checkAPIEndpoint(endpoint) {
+      addResult(`Checking endpoint: ${endpoint}...`, 'info');
+      
+      try {
+        const response = await fetch(`http://localhost:5000${endpoint}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          addResult(`Endpoint ${endpoint} success!`, 'success', data);
+        } else {
+          addResult(`Endpoint ${endpoint} error: ${response.status} ${response.statusText}`, 'error');
+        }
+      } catch (error) {
+        addResult(`Endpoint ${endpoint} connection failed!`, 'error', error.toString());
+      }
+    }
+    
+    async function checkWithFetch() {
+      addResult('Testing with different fetch options...', 'info');
+      
+      const options = [
+        {
+          name: 'Standard request',
+          config: {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          }
+        },
+        {
+          name: 'No-CORS mode',
+          config: {
+            method: 'GET',
+            mode: 'no-cors'
+          }
+        },
+        {
+          name: 'With credentials',
+          config: {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+          }
+        }
+      ];
+      
+      for (const option of options) {
+        try {
+          addResult(`Trying ${option.name}...`, 'info');
+          const response = await fetch('http://localhost:5000/api/test', option.config);
+          addResult(`${option.name} - Response type: ${response.type}, Status: ${response.status}`, 
+            response.ok ? 'success' : 'warning');
+        } catch (error) {
+          addResult(`${option.name} - Failed!`, 'error', error.toString());
+        }
+      }
+    }
+    
+    // Add initial message
+    addResult('Server check tool loaded. Click buttons above to start testing.', 'info');
+  </script>
+</body>
+</html>
