@@ -1,19 +1,21 @@
 {
   "files": {
-    "main.css": "/cannapure-plus/static/css/main.2c177889.css",
-    "main.js": "/cannapure-plus/static/js/main.23549445.js",
+    "main.css": "/cannapure-plus/static/css/main.507c816f.css",
+    "main.js": "/cannapure-plus/static/js/main.a8869edd.js",
     "static/media/cannabis-leaf.png": "/cannapure-plus/static/media/cannabis-leaf.a8c6783f412b9e51c311.png",
+    "static/media/logo.svg": "/cannapure-plus/static/media/logo.6e5170edd34984351f3b.svg",
     "static/media/cannapure-plus-logo.png": "/cannapure-plus/static/media/cannapure-plus-logo.2ee83188b46ed2963c50.png",
     "static/media/diamond-badge.png": "/cannapure-plus/static/media/diamond-badge.2ee83188b46ed2963c50.png",
     "static/media/emerald-badge.png": "/cannapure-plus/static/media/emerald-badge.2ee83188b46ed2963c50.png",
     "static/media/gold-badge.png": "/cannapure-plus/static/media/gold-badge.2ee83188b46ed2963c50.png",
     "static/media/tropez-badge.png": "/cannapure-plus/static/media/tropez-badge.2ee83188b46ed2963c50.png",
+    "static/media/clipboard-image-4.png": "/cannapure-plus/static/media/clipboard-image-4.96d351a38d2f495605f1.png",
     "index.html": "/cannapure-plus/index.html",
-    "main.2c177889.css.map": "/cannapure-plus/static/css/main.2c177889.css.map",
-    "main.23549445.js.map": "/cannapure-plus/static/js/main.23549445.js.map"
+    "main.507c816f.css.map": "/cannapure-plus/static/css/main.507c816f.css.map",
+    "main.a8869edd.js.map": "/cannapure-plus/static/js/main.a8869edd.js.map"
   },
   "entrypoints": [
-    "static/css/main.2c177889.css",
-    "static/js/main.23549445.js"
+    "static/css/main.507c816f.css",
+    "static/js/main.a8869edd.js"
   ]
 }
