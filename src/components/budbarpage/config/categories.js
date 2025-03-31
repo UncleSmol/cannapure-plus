@@ -44,11 +44,11 @@ const strainCategories = [
     title: "EDIBLES",
     description: "There is no waiting for the happy hour...it shall find you ahead.",
   },
-  {
-    id: "weekly_special",
-    title: "WEEKLY SPECIALS",
-    description: "Our hand-picked selection of special offers this week. Limited time deals on premium strains you won't want to miss!",
-  }
+  // {
+  //   id: "weekly_special",
+  //   title: "WEEKLY SPECIALS",
+  //   description: "Our hand-picked selection of special offers this week. Limited time deals on premium strains you won't want to miss!",
+  // }
 ];
 
 // Category ID mapping for easier lookup

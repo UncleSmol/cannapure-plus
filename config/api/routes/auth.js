@@ -4,9 +4,43 @@
  */
 const express = require('express');
 const router = express.Router();
+const cors = require('cors');
 const authService = require('../services/authService');
 const authMiddleware = require('../middleware/auth');
 const { rateLimit } = require('express-rate-limit');
+
+// Enhanced CORS options specifically for auth routes
+const authCorsOptions = {
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins - make sure to include your frontend URL
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5000',
+      'http://127.0.0.1:5000'
+      // Add your production domains here
+    ];
+    
+    if (process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Important for cookies/auth
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Cache-Control', 
+    'Accept', 
+    'Origin'
+  ]
+};
 
 // Rate limiting for login attempts
 const loginLimiter = rateLimit({
@@ -54,7 +88,8 @@ const passwordResetLimiter = rateLimit({
  * Register a new user
  * @route POST /api/auth/register
  */
-router.post('/register', registerLimiter, async (req, res) => {
+router.options('/register', cors(authCorsOptions)); // Enable pre-flight for register
+router.post('/register', cors(authCorsOptions), registerLimiter, async (req, res) => {
   try {
     // Extract request info for logging
     const requestInfo = {
@@ -117,7 +152,14 @@ router.post('/register', registerLimiter, async (req, res) => {
  * Login user
  * @route POST /api/auth/login
  */
-router.post('/login', loginLimiter, async (req, res) => {
+router.options('/login', cors(authCorsOptions)); // Enable pre-flight for login
+router.post('/login', cors(authCorsOptions), loginLimiter, async (req, res) => {
+  // Log login attempt for debugging
+  console.log('[AUTH ROUTES] Login attempt received:', {
+    email: req.body.email,
+    hasPassword: !!req.body.password,
+    userAgent: req.headers['user-agent']
+  });
   try {
     const { email, password } = req.body;
     
@@ -207,7 +249,8 @@ router.post('/login', loginLimiter, async (req, res) => {
  * Refresh token
  * @route POST /api/auth/refresh
  */
-router.post('/refresh', async (req, res) => {
+router.options('/refresh', cors(authCorsOptions)); // Enable pre-flight for refresh
+router.post('/refresh', cors(authCorsOptions), async (req, res) => {
   try {
     // Get refresh token from request body or cookie
     let refreshToken = req.body.refreshToken;
@@ -283,7 +326,8 @@ router.post('/refresh', async (req, res) => {
  * Logout user
  * @route POST /api/auth/logout
  */
-router.post('/logout', async (req, res) => {
+router.options('/logout', cors(authCorsOptions)); // Enable pre-flight for logout
+router.post('/logout', cors(authCorsOptions), async (req, res) => {
   try {
     // Get refresh token from request body or cookie
     let refreshToken = req.body.refreshToken;
@@ -365,7 +409,8 @@ router.post('/logout', async (req, res) => {
  * Get user profile
  * @route GET /api/auth/profile
  */
-router.get('/profile', authMiddleware.verifyToken, async (req, res) => {
+router.options('/profile', cors(authCorsOptions)); // Enable pre-flight for profile
+router.get('/profile', cors(authCorsOptions), authMiddleware.verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -408,7 +453,8 @@ router.get('/profile', authMiddleware.verifyToken, async (req, res) => {
  * Update user profile
  * @route PUT /api/auth/profile
  */
-router.put('/profile', authMiddleware.verifyToken, async (req, res) => {
+router.options('/profile', cors(authCorsOptions)); // Enable pre-flight for profile update
+router.put('/profile', cors(authCorsOptions), authMiddleware.verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const userData = req.body;
@@ -461,7 +507,8 @@ router.put('/profile', authMiddleware.verifyToken, async (req, res) => {
  * Request password reset
  * @route POST /api/auth/reset-password
  */
-router.post('/reset-password', passwordResetLimiter, async (req, res) => {
+router.options('/reset-password', cors(authCorsOptions)); // Enable pre-flight for password reset
+router.post('/reset-password', cors(authCorsOptions), passwordResetLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     
@@ -502,7 +549,8 @@ router.post('/reset-password', passwordResetLimiter, async (req, res) => {
  * Reset password with token
  * @route PUT /api/auth/reset-password/:token
  */
-router.put('/reset-password/:token', async (req, res) => {
+router.options('/reset-password/:token', cors(authCorsOptions)); // Enable pre-flight for password reset with token
+router.put('/reset-password/:token', cors(authCorsOptions), async (req, res) => {
   try {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
@@ -574,7 +622,8 @@ router.put('/reset-password/:token', async (req, res) => {
  * Change password
  * @route PUT /api/auth/change-password
  */
-router.put('/change-password', authMiddleware.verifyToken, async (req, res) => {
+router.options('/change-password', cors(authCorsOptions)); // Enable pre-flight for change password
+router.put('/change-password', cors(authCorsOptions), authMiddleware.verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;

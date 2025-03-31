@@ -71,7 +71,7 @@
   width: 100%;
   min-width: 120px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 1000000;
   animation: fadeIn 0.2s ease-in-out;
 }
 
@@ -86,8 +86,12 @@
   font-size: var(--text-sm);
   text-align: left;
   cursor: pointer;
+  z-index: 9999999999 !important;
+  -webkit-transition: var(--transition-fast);
+  -moz-transition: var(--transition-fast);
+  -ms-transition: var(--transition-fast);
+  -o-transition: var(--transition-fast);
   transition: var(--transition-fast);
-  z-index: var(h--z-header)!important;
 }
 
 .store-filter__option:last-child {

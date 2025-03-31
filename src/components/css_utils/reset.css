@@ -1,0 +1,66 @@
+
+/* Reset and base styles */
+
+/* Remove all animations and transitions for people that prefer not to see them */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-green) var(--dark-green);
+}
+
+/* Chrome, Edge, and Safari scrollbar styling */
+*::-webkit-scrollbar {
+    width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--dark-green);
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--primary-green);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--dark-green);
+}
+
+/* Selection styling */
+::selection {
+    background: var(--accent-green);
+    color: var(--white);
+}
+
+/* Focus styling */
+:focus {
+    outline: 2px solid var(--accent-green);
+    outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-green);
+    outline-offset: 2px;
+}
+
+/* Hide scrollbar for specific elements while maintaining functionality */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}

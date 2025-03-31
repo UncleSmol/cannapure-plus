@@ -1,0 +1,117 @@
+/* _variables.css */
+
+:root {
+    /* Core Green Palette */
+     --dark-green: #0A1F0F;      /* Deepest shadow green */
+     --primary-green: #2A5E36;   /* Main brand green */
+     --light-green: #4EA340;     /* Vibrant highlight green */
+     --accent-green: #3C8D4F;    /* Alternative accent */
+     --success-green: #2E7D32;   /* Status indicator */
+ 
+     /* Neutral Colors - Keep these */
+     --white: #FFFFFF;
+     --off-white: #F8F9FA;
+     --light-gray: #E9ECEF;
+     --medium-gray: #6C757D;
+     --dark-gray: #343A40;
+     --black: #212529;
+ 
+     /* Glass Effects - Updated for new color scheme */
+     --glass-bg: rgba(10, 31, 15, 0.85);     /* Based on dark-green */
+     --glass-border: rgba(42, 94, 54, 0.2);   /* Based on primary-green */
+     --overlay-dark: rgba(10, 31, 15, 0.95);
+     --overlay-light: rgba(255, 255, 255, 0.1);
+ 
+     /* Gradients - Updated with our new gradient */
+     --gradient-primary: linear-gradient(
+         150deg,
+         #0A1F0F 0%,
+         #2A5E36 35%,
+         #4EA340 65%,
+         #2A5E36 85%,
+         #0A1F0F 100%
+     );
+     --gradient-overlay: linear-gradient(
+         150deg,
+         rgba(10, 31, 15, 0.95) 0%,
+         rgba(42, 94, 54, 0.85) 100%
+     );
+ 
+     /* Typography */
+     --font-primary: "Tilt Neon", sans-serif;
+     --font-display: "ADLaM Display", serif;
+ 
+     /* Font Sizes */
+     --text-xs: 0.75rem;      /* 12px */
+     --text-sm: 0.875rem;     /* 14px */
+     --text-base: 1rem;       /* 16px */
+     --text-lg: 1.125rem;     /* 18px */
+     --text-xl: 1.25rem;      /* 20px */
+     --text-2xl: 1.5rem;      /* 24px */
+     --text-3xl: 1.875rem;    /* 30px */
+     --text-4xl: 2.25rem;     /* 36px */
+     --text-5xl: 3rem;        /* 48px */
+ 
+     /* Font Weights */
+     --weight-normal: 400;
+     --weight-medium: 500;
+     --weight-semibold: 600;
+     --weight-bold: 700;
+ 
+     /* Spacing */
+     --space-1: 0.25rem;      /* 4px */
+     --space-2: 0.5rem;       /* 8px */
+     --space-3: 0.75rem;      /* 12px */
+     --space-4: 1rem;         /* 16px */
+     --space-5: 1.5rem;       /* 24px */
+     --space-6: 2rem;         /* 32px */
+     --space-8: 3rem;         /* 48px */
+     --space-10: 4rem;        /* 64px */
+ 
+     /* Border Radius */
+     --radius-sm: 0.25rem;    /* 4px */
+     --radius-md: 0.5rem;     /* 8px */
+     --radius-lg: 1rem;       /* 16px */
+     --radius-xl: 1.5rem;     /* 24px */
+     --radius-full: 9999px;
+ 
+     /* Layout */
+     --header-height: 60px;
+     --max-width: 1200px;
+     --card-width: 180px !important;
+ 
+     /* Z-index Scale */
+     --z-negative: -1;
+     --z-elevate: 1;
+     --z-sticky: 100;
+     --z-header: 20000;
+     --z-overlay: 300;
+     --z-modal: 400;
+     --z-popover: 500;
+     --z-maximum: 999;
+ 
+     /* Transitions */
+     --transition-fast: 150ms ease;
+     --transition-normal: 300ms ease;
+     --transition-slow: 500ms ease;
+     --transition-bounce: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+ 
+     /* Breakpoints */
+     --breakpoint-mobile: 916px;  /* Changed from 700px to 916px */
+ }
+ 
+ /* Media Query Breakpoints */
+ @media (max-width: 916px) {  /* Changed from 870px to 916px */
+     :root {
+         /* Mobile Adjustments */
+         --header-height: 50px;
+         --card-width: 100%;
+         --text-4xl: 2rem;
+         --text-5xl: 2.5rem;
+         --space-8: 2rem;
+         --space-10: 3rem;
+     }
+ }
+ 
+ /* Google Fonts Import */
+ @import url('https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Plaster&family=Tilt+Neon&family=Whisper&display=swap');

@@ -77,7 +77,7 @@ const Header = ({ currentPage }) => {
   useEffect(() => {
     gsap.from(".site-header", {
     
-      opacity: 0.8,
+      // opacity: 0.8,
       duration: 0.3,
       ease: "power2.out",
     });
@@ -275,6 +275,9 @@ const Header = ({ currentPage }) => {
               </li>
             ))}
           </ul>
+          <div className="mobile-logo">
+            <img src="./src/assets/images/cannapure-plus-logo.png" alt="" />
+          </div>
         </div>
       </header>
     </>

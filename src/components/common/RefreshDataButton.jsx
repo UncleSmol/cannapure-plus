@@ -14,12 +14,8 @@ import "./RefreshDataButton.css";
  */
 const RefreshDataButton = ({ onRefresh, onInteraction, className = "" }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(true);
   
   const buttonRef = useRef(null);
-  const feedbackRef = useRef(null);
   
   // Notify parent about interaction
   const notifyInteraction = () => {
@@ -37,28 +33,6 @@ const RefreshDataButton = ({ onRefresh, onInteraction, className = "" }) => {
     );
   }, []);
   
-  // Animate feedback message when shown
-  useEffect(() => {
-    if (showFeedback) {
-      gsap.fromTo(
-        feedbackRef.current,
-        { opacity: 0, y: -10 },
-        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
-      );
-      
-      // Auto-hide feedback after 3 seconds
-      const timer = setTimeout(() => {
-        gsap.to(feedbackRef.current, {
-          opacity: 0,
-          y: -10, 
-          duration: 0.4,
-          onComplete: () => setShowFeedback(false)
-        });
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [showFeedback]);
   
   /**
    * Clear all strain-related cache from localStorage
@@ -88,15 +62,13 @@ const RefreshDataButton = ({ onRefresh, onInteraction, className = "" }) => {
       
       return {
         success: true,
-        count: keysToRemove.length,
-        message: `Cleared ${keysToRemove.length} cached items`
+        count: keysToRemove.length
       };
     } catch (error) {
       console.error('Failed to clear cache:', error);
       return {
         success: false,
-        error: error.message,
-        message: 'Failed to clear cache'
+        error: error.message
       };
     }
   };
@@ -122,29 +94,16 @@ const RefreshDataButton = ({ onRefresh, onInteraction, className = "" }) => {
       const result = clearStrainCache();
       
       if (result.success) {
-        setFeedbackMessage(result.message);
-        setIsSuccess(true);
-        
         // Call the onRefresh callback if provided
         if (typeof onRefresh === 'function') {
           await onRefresh();
-          setFeedbackMessage("Data refreshed successfully!");
         } else {
           // Default: reload the page after a short delay
-          setFeedbackMessage("Cache cleared! Reloading page...");
-          setTimeout(() => window.location.reload(), 1500);
+          setTimeout(() => window.location.reload(), 1000);
         }
-      } else {
-        setFeedbackMessage(result.message);
-        setIsSuccess(false);
       }
-      
-      setShowFeedback(true);
     } catch (error) {
       console.error('Error during refresh:', error);
-      setFeedbackMessage("Failed to refresh data");
-      setIsSuccess(false);
-      setShowFeedback(true);
     } finally {
       setIsRefreshing(false);
       
@@ -175,15 +134,6 @@ const RefreshDataButton = ({ onRefresh, onInteraction, className = "" }) => {
         </span>
         <span className="refresh-icon">↻</span>
       </button>
-      
-      {showFeedback && (
-        <div 
-          ref={feedbackRef}
-          className={`refresh-feedback ${isSuccess ? "success" : "error"}`}
-        >
-          {feedbackMessage}
-        </div>
-      )}
     </div>
   );
 };

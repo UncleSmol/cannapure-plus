@@ -1,5 +1,76 @@
 const db = require('../../database');
 const bcrypt = require('bcrypt');
+const cacheService = require('../../services/cacheService');
+const cacheMonitoring = require('../../services/cacheMonitoring');
+
+/**
+ * Create a cache middleware for user-related endpoints
+ * @param {Object} options - Cache options (ttl, backgroundRefresh)
+ * @returns {Function} - Express middleware
+ */
+const createUserCacheMiddleware = (options = {}) => {
+  return async (req, res, next) => {
+    // Only cache GET requests
+    if (req.method !== 'GET') {
+      return next();
+    }
+
+    // Create a cache key based on the URL
+    const cacheKey = `user:${req.originalUrl}`;
+    
+    try {
+      // Try to get from cache first
+      const cachedResponse = await cacheService.get(
+        cacheKey,
+        // This function will be called if cache misses
+        async () => {
+          // We need to capture the response
+          return new Promise((resolve) => {
+            // Store the original res.send
+            const originalSend = res.send;
+            
+            // Override res.send to capture the response
+            res.send = function(body) {
+              // Restore original function
+              res.send = originalSend;
+              
+              // Resolve with the response body
+              resolve(body);
+              
+              // Call the original function
+              return originalSend.call(this, body);
+            };
+            
+            // Continue to the next middleware
+            next();
+          });
+        },
+        {
+          ttl: options.ttl || 300, // 5 minutes default
+          namespace: 'users',
+          backgroundRefresh: options.backgroundRefresh || false
+        }
+      );
+
+      // If we have a cached response and we haven't called next() yet
+      if (cachedResponse && !res.headersSent) {
+        // Set cache hit header
+        res.setHeader('X-Cache', 'HIT');
+        
+        // Send the cached response
+        return res.send(cachedResponse);
+      }
+      
+      // Set cache miss header if we're continuing to next middleware
+      res.setHeader('X-Cache', 'MISS');
+      
+    } catch (error) {
+      console.error('[CACHE] Error in cache middleware:', error);
+      // Continue to the next middleware on error
+      next();
+    }
+  };
+};
 
 /**
  * Get all users (admin only)
@@ -117,6 +188,9 @@ const updateUser = async (id, userData) => {
     // Execute update
     await db.query(query, params);
     
+    // Invalidate user cache
+    await invalidateUserCache(id);
+    
     // Return updated user
     return await getUserById(id);
   } catch (error) {
@@ -136,6 +210,9 @@ const deleteUser = async (id) => {
     
     // Delete user
     await db.query('DELETE FROM users WHERE id = ?', [id]);
+    
+    // Invalidate user cache
+    await invalidateUserCache(id);
     
     return true;
   } catch (error) {
@@ -248,10 +325,33 @@ const updateUserPreferences = async (userId, preferencesData) => {
       await db.query(query, params);
     }
     
+    // Invalidate user preferences cache
+    await invalidateUserCache(userId);
+    
     // Return updated preferences
     return await getUserPreferences(userId);
   } catch (error) {
     throw error;
+  }
+};
+
+/**
+ * Invalidate user cache
+ * @param {number} userId - User ID (optional, if not provided invalidates all user caches)
+ * @returns {Promise<void>}
+ */
+const invalidateUserCache = async (userId) => {
+  try {
+    if (userId) {
+      // Invalidate specific user cache
+      await cacheService.invalidate(`user:/api/users/${userId}`);
+      await cacheService.invalidate(`user:/api/users/${userId}/preferences`);
+    } else {
+      // Invalidate all user caches with the 'users' namespace
+      await cacheService.clear({ namespace: 'users' });
+    }
+  } catch (error) {
+    console.error('[CACHE] Error invalidating user cache:', error);
   }
 };
 
@@ -261,5 +361,7 @@ module.exports = {
   updateUser,
   deleteUser,
   getUserPreferences,
-  updateUserPreferences
+  updateUserPreferences,
+  createUserCacheMiddleware,
+  invalidateUserCache
 };

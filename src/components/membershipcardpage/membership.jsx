@@ -1,6 +1,7 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import { gsap } from "gsap";
 import axios from "axios";
+import AuthContext from "../user_auth/AuthContext";
 import "./membership.css";
 
 // Import images
@@ -10,16 +11,31 @@ import diamondBadge from "../../assets/images/badges/diamond-badge.png";
 import emeraldBadge from "../../assets/images/badges/emerald-badge.png";
 import tropezBadge from "../../assets/images/badges/tropez-badge.png";
 
-// API URL configuration - FIXED: removed trailing slash to prevent double slashes
+// API URL configuration
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// Mock data for fallback
-const MOCK_USER_DATA = {
-  firstName: "Guest",
-  last_name: "User",
-  cpNumber: "CP000000",
-  activeDays: 0,
-  membershipTier: "basic"
+// Tier information for display
+const TIER_INFO = {
+  basic: {
+    name: "Basic",
+    description: "Welcome to Cannapure"
+  },
+  gold: {
+    name: "Gold",
+    description: "Premium member"
+  },
+  diamond: {
+    name: "Diamond",
+    description: "Elite member"
+  },
+  emerald: {
+    name: "Emerald",
+    description: "VIP member"
+  },
+  tropez: {
+    name: "Tropez",
+    description: "Exclusive member"
+  }
 };
 
 export default function MembershipCardHolder() {
@@ -29,6 +45,7 @@ export default function MembershipCardHolder() {
   const logoRef = useRef(null);
   const userInfoRef = useRef(null);
   const closeButtonRef = useRef(null);
+  const tierInfoRef = useRef(null);
   
   // Animation timelines
   const cardTimeline = useRef(null);
@@ -38,6 +55,9 @@ export default function MembershipCardHolder() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Get authentication context
+  const { isAuthenticated, user, token } = useContext(AuthContext);
 
   // Function to get badge image based on membership tier
   const getBadgeImage = (tier) => {
@@ -58,22 +78,26 @@ export default function MembershipCardHolder() {
   // Fetch user data from API
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!isAuthenticated || !token) {
+        console.warn('User is not authenticated, cannot fetch membership data');
+        setError('Please log in to view your membership details');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         
-        // Fixed: Using proper endpoint structure
+        // Using proper endpoint structure
         const endpoint = '/user/membership';
         console.log('Fetching membership data from:', `${API_URL}/api${endpoint}`);
         
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
-        
-        // Set up request config
-        const config = token ? {
+        // Set up request config with auth token
+        const config = {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        } : {};
+        };
         
         // Make the API request with the correct URL
         const response = await axios.get(`${API_URL}/api${endpoint}`, config);
@@ -87,24 +111,44 @@ export default function MembershipCardHolder() {
         // Try fallback endpoint if main one fails
         try {
           console.log('Trying fallback endpoint');
-          const fallbackResponse = await axios.get(`${API_URL}/api/membership`);
+          const fallbackResponse = await axios.get(`${API_URL}/api/membership`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
           console.log('Fallback data received:', fallbackResponse.data);
           setUserData(fallbackResponse.data);
           setLoading(false);
         } catch (fallbackErr) {
           console.error("Fallback endpoint also failed:", fallbackErr);
-          setError("Failed to load membership data. Please try again.");
+          
+          if (err.response && err.response.status === 401) {
+            setError('Your session has expired. Please log in again.');
+          } else if (err.response && err.response.status === 404) {
+            setError('No membership found for your account.');
+          } else {
+            setError("Failed to load membership data. Please try again.");
+          }
+          
           setLoading(false);
           
-          // Fallback to mock data
-          console.log('Using fallback mock data');
-          setUserData(MOCK_USER_DATA);
+          // If we get here, try using fallback mock data based on the user context
+          console.log('Using fallback mock data from user context');
+          if (user) {
+            const mockData = {
+              firstName: user.firstName || user.first_name || 'User',
+              last_name: user.lastName || user.last_name || '',
+              cpNumber: user.cpNumber || `CP${String(user.id || '000000').padStart(6, '0')}`,
+              membershipTier: user.membershipTier || user.membership_tier || 'basic',
+              activeDays: 0,
+              membershipStatus: 'ACTIVE'
+            };
+            setUserData(mockData);
+          }
         }
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [isAuthenticated, token, user]);
 
   // Setup base animations
   useEffect(() => {
@@ -157,6 +201,15 @@ export default function MembershipCardHolder() {
         { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
         "-=0.2"
       );
+      
+    if (tierInfoRef.current) {
+      cardTimeline.current.fromTo(
+        tierInfoRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+        "-=0.1"
+      );
+    }
     
     // Apply tier-specific animations
     applyTierAnimations(userData.membershipTier);
@@ -376,6 +429,25 @@ export default function MembershipCardHolder() {
     });
   };
 
+  // Format active days with proper suffix
+  const formatActiveDays = (days) => {
+    if (!days && days !== 0) return "N/A";
+    
+    const dayNum = parseInt(days, 10);
+    return `${dayNum} day${dayNum !== 1 ? 's' : ''}`;
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   // Show loading state
   if (loading) {
     return (
@@ -397,13 +469,44 @@ export default function MembershipCardHolder() {
           <button onClick={() => window.location.reload()} className="retry-button">
             Try Again
           </button>
+          {!isAuthenticated && (
+            <button 
+              onClick={() => window.location.hash = "loginPage"} 
+              className="login-button"
+            >
+              Log In
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
-  // If we have no data and no error/loading state, don't render
-  if (!userData) return null;
+  // Show no data state
+  if (!userData) {
+    return (
+      <div id="membershipCardHolder" className="membership" ref={pageRef}>
+        <div className="not-found-container">
+          <h3>No Membership Found</h3>
+          <p>We couldn't find any membership details for your account.</p>
+          <button onClick={() => window.location.hash = "homePage"} className="home-button">
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Get tier information
+  const tierInfo = TIER_INFO[userData.membershipTier] || TIER_INFO.basic;
+  
+  // Determine membership status class
+  const getStatusClass = () => {
+    const status = userData.membershipStatus || userData.status;
+    if (status && status.toUpperCase() !== 'ACTIVE') return 'status-inactive';
+    if (userData.activeDays < 30) return 'status-expiring';
+    return 'status-active';
+  };
 
   return (
     <div id="membershipCardHolder" className="membership" ref={pageRef}>
@@ -412,12 +515,14 @@ export default function MembershipCardHolder() {
         id="closeCardBtn" 
         onClick={handleCloseCard}
         ref={closeButtonRef}
+        aria-label="Close membership card"
       >
         ×
       </div>
 
       <div 
         id="membershipCard" 
+        className={`tier-${userData.membershipTier}`}
         data-badge={userData.membershipTier}
         ref={cardRef}
       >
@@ -430,33 +535,111 @@ export default function MembershipCardHolder() {
             >
               <img 
                 src={getBadgeImage(userData.membershipTier)} 
-                alt={`${userData.membershipTier} badge`} 
+                alt={`${tierInfo.name} badge`} 
               />
             </div>
           </span>
 
           <span id="cardLogo" ref={logoRef}>
-            <img src={logoPlaceholder} alt="Cannipure logo" />
+            <img src={logoPlaceholder} alt="Cannapure logo" />
           </span>
         </div>
 
         {/* Bottom Section of the Membership Card */}
-        <div id="bottomCardSection" ref={userInfoRef}>
-          <div id="userName">
-            <p>{`${userData.firstName} ${userData.last_name}`}</p>
-            <p>{userData.cpNumber}</p>
-            <p>Active for: <span className="days-count">{userData.activeDays}</span> days</p>
+        <div id="bottomCardSection">
+          <div id="userName" ref={userInfoRef}>
+            <p className="member-name">{`${userData.firstName} ${userData.last_name}`}</p>
+            <p className="member-id">{userData.cpNumber}</p>
+            <p className="member-active">
+              Active for: <span className="days-count">{formatActiveDays(userData.activeDays)}</span>
+            </p>
+            <div className="tier-info" ref={tierInfoRef}>
+              <span className="tier-name">{tierInfo.name}</span>
+              <span className="tier-description">{tierInfo.description}</span>
+              <span className={`membership-status ${getStatusClass()}`}>
+                {userData.membershipStatus || 'ACTIVE'}
+              </span>
+            </div>
+            {userData.issuedDate && (
+              <p className="issued-date">Issued: {formatDate(userData.issuedDate)}</p>
+            )}
           </div>
 
           <div id="currentBadgeStatusWrapper">
             <img
               src={getBadgeImage(userData.membershipTier)}
-              alt="Current membership badge"
+              alt={`${tierInfo.name} membership badge`}
               ref={badgeRef}
             />
           </div>
         </div>
       </div>
+      
+      {/* Membership Actions */}
+      {isAuthenticated && (
+        <div className="membership-actions">
+          <button 
+            className="action-button primary"
+            onClick={() => window.location.hash = "renewMembership"}
+          >
+            Renew Membership
+          </button>
+          <button 
+            className="action-button secondary"
+            onClick={() => window.location.hash = "upgradeTier"}
+          >
+            Upgrade Tier
+          </button>
+        </div>
+      )}
     </div>
   );
 }
+
+// Helper function to get benefits based on tier (not displayed but available for future use)
+const getTierBenefits = (tier) => {
+  if (!tier) return ['Standard membership benefits'];
+  
+  switch(tier.toLowerCase()) {
+    case 'gold':
+      return [
+        '15% discount on all products',
+        'Free shipping on orders over R500',
+        'Early access to new products',
+        'Exclusive Gold member events'
+      ];
+    case 'diamond':
+      return [
+        '20% discount on all products',
+        'Free shipping on all orders',
+        'Priority access to new products',
+        'Exclusive Diamond member events',
+        'Personal shopping assistant'
+      ];
+    case 'emerald':
+      return [
+        '25% discount on all products',
+        'Free shipping on all orders',
+        'VIP access to new products',
+        'Exclusive Emerald member events',
+        'Personal shopping assistant',
+        'Monthly free product sample'
+      ];
+    case 'tropez':
+      return [
+        '30% discount on all products',
+        'Free shipping on all orders',
+        'VIP access to new products and limited editions',
+        'Exclusive Tropez member events',
+        'Dedicated personal shopping assistant',
+        'Monthly free product box',
+        'Access to Tropez lounge'
+      ];
+    default: // basic
+      return [
+        '5% discount on selected products',
+        'Member-only promotions',
+        'Birthday special offer'
+      ];
+  }
+};

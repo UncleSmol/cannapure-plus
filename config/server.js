@@ -29,6 +29,9 @@ const cacheMonitoring = require('./api/services/cacheMonitoring');
 const backgroundRefresh = require('./api/services/backgroundRefresh');
 const { invalidateCache } = require('./api/middleware/cacheInvalidation');
 
+// Import CORS debug middleware
+const corsDebugMiddleware = require('./api/middleware/corsDebug');
+
 // Import cache dashboard routes
 const cacheDashboardRoutes = require('./api/routes/cache-dashboard.js');
 
@@ -48,34 +51,83 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-// CORS configuration - Improved to handle preflight requests and all routes
+// CORS configuration - Enhanced for robust cross-origin support
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow any origin in development mode
-    if (NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
+    // Always allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
     
-    // In production, check against allowed origins
+    // List of allowed origins
     const allowedOrigins = [
-      'http://localhost:3000', 
-      'http://127.0.0.1:3000', 
-      'http://localhost:5000', 
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5000',
       'http://127.0.0.1:5000'
+      // Add your production domains here
     ];
     
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Always allow in development
+    if (NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
+  credentials: true, // Important for cookies/auth
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Force-Refresh', 'Cache-Control', 'Accept', 'Origin', 'X-Requested-With'],
-  exposedHeaders: ['X-API-Version', 'X-Response-Time', 'ETag', 'Last-Modified'],
-  credentials: true, // Important for cookies
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'X-Force-Refresh', 
+    'Cache-Control', 
+    'Accept', 
+    'Origin',
+    'Access-Control-Allow-Origin'
+  ],
+  exposedHeaders: [
+    'X-API-Version', 
+    'X-Response-Time', 
+    'ETag', 
+    'Last-Modified'
+  ],
   maxAge: 86400 // Cache preflight requests for 24 hours
 }));
+
+// Enable pre-flight explicitly for auth endpoints
+app.options('/api/auth/login', cors());
+app.options('/api/auth/register', cors());
+app.options('/api/auth/refresh-token', cors());
+app.options('/api/auth/logout', cors());
+
+// Enable pre-flight for all routes
+app.options('*', cors());
+
+// Apply the CORS debug middleware
+app.use(corsDebugMiddleware);
+
+// Special handling for auth routes
+const authCorsMiddleware = require('./api/middleware/authCors');
+app.use('/api/auth', authCorsMiddleware);
+
+// Add debugging for auth routes specifically
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/auth')) {
+    logger.debug(`Auth request: ${req.method} ${req.path}`);
+  }
+  next();
+});
+
+// Add CORS debug route to verify CORS is working
+app.options('/api/cors-test', cors());
+app.get('/api/cors-test', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.status(200).json({ 
+    message: 'CORS is working!',
+    origin: req.headers.origin || 'unknown',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Body parsing middleware
 app.use(express.json());
@@ -175,6 +227,11 @@ app.get('/api/health', (req, res) => {
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
+  // Set CORS headers again for this specific endpoint
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  console.log('[API] Test endpoint accessed');
   res.status(200).json({ message: 'API is working!' });
 });
 

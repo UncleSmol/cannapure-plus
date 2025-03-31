@@ -11,7 +11,7 @@ const WeeklySpecials = ({ strainData, selectedStore, isLoading, animationRef }) 
   
   return (
     <div className="weekly_specials_tag" id="weeklyspecials_tagWrapper" ref={animationRef}>
-      <h3 className="section-title">Weekly Specials</h3>
+      {/* <h3 className="section-title">Weekly Specials</h3> */}
       <div className="__content-wrapper">
         {weeklySpecials?.length > 0 ? (
           weeklySpecials.map((strain, index) => (

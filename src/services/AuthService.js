@@ -3,7 +3,54 @@
  * Handles token management, validation, and refresh
  */
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 import apiConfig from '../config/api.config';
+
+// Create a dedicated auth client with specific configuration
+const authClient = axios.create({
+  baseURL: apiConfig.baseUrl,
+  withCredentials: true, // Important for cookies/auth
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  // Increase timeout for auth requests
+  timeout: 10000
+});
+
+// Add request interceptor for debugging
+authClient.interceptors.request.use(
+  config => {
+    console.log(`[AUTH] Making ${config.method.toUpperCase()} request to ${config.url}`);
+    return config;
+  },
+  error => {
+    console.error('[AUTH] Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for error handling
+authClient.interceptors.response.use(
+  response => {
+    return response;
+  },
+  error => {
+    if (error.message === 'Network Error') {
+      console.error('[AUTH] Network error - likely CORS issue or server not running');
+      console.error('[AUTH] Request details:', error.config);
+      // Provide more helpful error message
+      error.message = 'Unable to connect to the authentication server. Please check your internet connection or try again later.';
+    } else if (error.response) {
+      console.error(`[AUTH] Server error: ${error.response.status}`, error.response.data);
+      // Extract error message from response if available
+      if (error.response.data && error.response.data.message) {
+        error.message = error.response.data.message;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 class AuthService {
   constructor() {
@@ -197,34 +244,37 @@ class AuthService {
   }
 
   /**
+   * Test connection to verify CORS is working
+   * @returns {Promise<Object>} Test response
+   */
+  async testConnection() {
+    try {
+      const response = await authClient.get('/cors-test');
+      console.log('[AUTH] CORS test successful:', response.data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('[AUTH] CORS test failed:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
    * Login user with email and password
    * @param {string} email - User email
    * @param {string} password - User password
+   * @param {string} cpNumber - Optional CP number
    * @returns {Promise<Object>} Login response data
    */
-  async login(email, password) {
+  async login(email, password, cpNumber = null) {
     try {
       console.log(`Attempting login for email: ${email} to ${apiConfig.auth.login}`);
-      const response = await fetch(apiConfig.auth.login, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      // Parse the JSON response
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Extract the error message properly
-        const errorMessage = data.error?.message || 
-                            data.error || 
-                            'Login failed. Please check your credentials.';
-        console.error('Login response error:', errorMessage);
-        throw new Error(errorMessage);
-      }
-
+      
+      const loginData = { email, password };
+      if (cpNumber) loginData.cpNumber = cpNumber;
+      
+      const response = await authClient.post(apiConfig.auth.login, loginData);
+      const data = response.data;
+      
       console.log('Login successful, response:', data);
       
       // Store tokens in localStorage - adjust property names based on your API response
@@ -239,7 +289,7 @@ class AuthService {
       
       return data;
     } catch (error) {
-      console.error('Login error:', error.message);
+      console.error('Login error:', error);
       // Throw error with message, not the entire object
       throw new Error(error.message || 'Login failed');
     }
@@ -258,18 +308,11 @@ class AuthService {
       
       if (refreshToken) {
         // Call the logout endpoint to invalidate the token on the server
-        const response = await fetch(apiConfig.auth.logout, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ refreshToken }),
-        });
-        
-        if (!response.ok) {
-          console.warn('Server-side logout failed, but continuing with client-side logout');
-        } else {
+        try {
+          const response = await authClient.post(apiConfig.auth.logout, { refreshToken });
           console.log('Server-side logout successful');
+        } catch (apiError) {
+          console.warn('Server-side logout failed, but continuing with client-side logout', apiError);
         }
       }
     } catch (error) {
@@ -294,19 +337,8 @@ class AuthService {
     }
     
     try {
-      const response = await fetch(apiConfig.auth.refresh, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to refresh token');
-      }
-      
-      const data = await response.json();
+      const response = await authClient.post(apiConfig.auth.refresh, { refreshToken });
+      const data = response.data;
       
       this.setToken(data.token);
       this.setRefreshToken(data.refreshToken);
@@ -344,25 +376,8 @@ class AuthService {
         id_number: userData.id_number || userData.idNumber
       };
       
-      const response = await fetch(apiConfig.auth.register, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData),
-      });
-
-      // Parse the JSON response
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Extract the error message properly
-        const errorMessage = data.error?.message || 
-                            data.error || 
-                            'Registration failed. Please try again.';
-        console.error('Registration response error:', errorMessage);
-        throw new Error(errorMessage);
-      }
+      const response = await authClient.post(apiConfig.auth.register, registrationData);
+      const data = response.data;
 
       console.log('Registration successful, response:', data);
       
@@ -380,9 +395,33 @@ class AuthService {
       
       return data;
     } catch (error) {
-      console.error('Registration error:', error.message);
+      console.error('Registration error:', error);
       // Throw error with message, not the entire object
       throw new Error(error.message || 'Registration failed');
+    }
+  }
+
+  /**
+   * Verify authentication status
+   * @returns {Promise<Object|null>} User data if authenticated, null otherwise
+   */
+  async verifyAuth() {
+    const token = this.getToken();
+    if (!token) return null;
+    
+    try {
+      const response = await authClient.get(apiConfig.auth.me, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      // If token is invalid or expired, clear tokens
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        this.clearTokens();
+      }
+      return null;
     }
   }
 }
