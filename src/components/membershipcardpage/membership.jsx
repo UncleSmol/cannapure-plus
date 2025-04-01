@@ -1,7 +1,8 @@
+
 import React, { useRef, useEffect, useState, useContext } from "react";
 import { gsap } from "gsap";
 import axios from "axios";
-import AuthContext from "../user_auth/AuthContext";
+import { useAuth } from "../../context/AuthProvider";
 import "./membership.css";
 
 // Import images
@@ -57,10 +58,52 @@ export default function MembershipCardHolder() {
   const [error, setError] = useState(null);
   
   // Get authentication context
-  const { isAuthenticated, user, token } = useContext(AuthContext);
+  const { isAuthenticated, user, token, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    console.log('Auth Debug in MembershipCardHolder:', {
+      isAuthenticated,
+      hasUser: !!user,
+      hasToken: !!token,
+      authLoading,
+      tokenFromStorage: localStorage.getItem('token') ? 'Token exists' : 'No token',
+      userFromStorage: localStorage.getItem('userData') ? 'User data exists' : 'No user data',
+      tokenLength: localStorage.getItem('token') ? localStorage.getItem('token').length : 0
+    });
+    
+    // Check token format
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      try {
+        // Check if token is valid JWT format (has 3 parts separated by dots)
+        const parts = storedToken.split('.');
+        console.log('Token parts:', parts.length);
+        if (parts.length !== 3) {
+          console.warn('Token does not appear to be in valid JWT format');
+        } else {
+          console.log('Token appears to be valid JWT format');
+          // Try to decode payload
+          try {
+            const payload = JSON.parse(atob(parts[1]));
+            console.log('Token payload:', {
+              exp: payload.exp ? new Date(payload.exp * 1000).toLocaleString() : 'No exp',
+              iat: payload.iat ? new Date(payload.iat * 1000).toLocaleString() : 'No iat',
+              userId: payload.userId || payload.sub || 'No user ID'
+            });
+          } catch (e) {
+            console.error('Error decoding token payload:', e);
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing token:', e);
+      }
+    }
+  }, [isAuthenticated, user, token, authLoading]);
 
   // Function to get badge image based on membership tier
   const getBadgeImage = (tier) => {
+    if (!tier) return logoPlaceholder;
+    
     switch(tier) {
       case 'gold':
         return goldBadge;
@@ -77,16 +120,29 @@ export default function MembershipCardHolder() {
 
   // Fetch user data from API
   useEffect(() => {
+    let isMounted = true; // Flag to prevent state updates after unmount
+    
     const fetchUserData = async () => {
+      // Don't proceed if auth is still loading
+      if (authLoading) {
+        console.log("Auth is still loading, waiting...");
+        return;
+      }
+  
+      // Don't proceed if not authenticated
       if (!isAuthenticated || !token) {
         console.warn('User is not authenticated, cannot fetch membership data');
-        setError('Please log in to view your membership details');
-        setLoading(false);
+        if (isMounted) {
+          setError('Please log in to view your membership details');
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        setLoading(true);
+        if (isMounted) {
+          setLoading(true);
+        }
         
         // Using proper endpoint structure
         const endpoint = '/user/membership';
@@ -103,8 +159,10 @@ export default function MembershipCardHolder() {
         const response = await axios.get(`${API_URL}/api${endpoint}`, config);
         
         console.log('Membership data received:', response.data);
-        setUserData(response.data);
-        setLoading(false);
+        if (isMounted) {
+          setUserData(response.data);
+          setLoading(false);
+        }
       } catch (err) {
         console.error("Error fetching user data:", err);
         
@@ -115,40 +173,49 @@ export default function MembershipCardHolder() {
             headers: { Authorization: `Bearer ${token}` }
           });
           console.log('Fallback data received:', fallbackResponse.data);
-          setUserData(fallbackResponse.data);
-          setLoading(false);
+          if (isMounted) {
+            setUserData(fallbackResponse.data);
+            setLoading(false);
+          }
         } catch (fallbackErr) {
           console.error("Fallback endpoint also failed:", fallbackErr);
           
-          if (err.response && err.response.status === 401) {
-            setError('Your session has expired. Please log in again.');
-          } else if (err.response && err.response.status === 404) {
-            setError('No membership found for your account.');
-          } else {
-            setError("Failed to load membership data. Please try again.");
-          }
-          
-          setLoading(false);
-          
-          // If we get here, try using fallback mock data based on the user context
-          console.log('Using fallback mock data from user context');
-          if (user) {
-            const mockData = {
-              firstName: user.firstName || user.first_name || 'User',
-              last_name: user.lastName || user.last_name || '',
-              cpNumber: user.cpNumber || `CP${String(user.id || '000000').padStart(6, '0')}`,
-              membershipTier: user.membershipTier || user.membership_tier || 'basic',
-              activeDays: 0,
-              membershipStatus: 'ACTIVE'
-            };
-            setUserData(mockData);
+          if (isMounted) {
+            if (err.response && err.response.status === 401) {
+              setError('Your session has expired. Please log in again.');
+            } else if (err.response && err.response.status === 404) {
+              setError('No membership found for your account.');
+            } else {
+              setError("Failed to load membership data. Please try again.");
+            }
+            
+            setLoading(false);
+            
+            // If we get here, try using fallback mock data based on the user context
+            console.log('Using fallback mock data from user context');
+            if (user) {
+              const mockData = {
+                firstName: user.firstName || user.first_name || 'User',
+                last_name: user.lastName || user.last_name || '',
+                cpNumber: user.cpNumber || `CP${String(user.id || '000000').padStart(6, '0')}`,
+                membershipTier: user.membershipTier || user.membership_tier || 'basic',
+                activeDays: 0,
+                membershipStatus: 'ACTIVE'
+              };
+              setUserData(mockData);
+            }
           }
         }
       }
     };
 
     fetchUserData();
-  }, [isAuthenticated, token, user]);
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, token, user, authLoading]); // Added authLoading to dependencies
 
   // Setup base animations
   useEffect(() => {
@@ -170,56 +237,73 @@ export default function MembershipCardHolder() {
     );
     
     // Close button animation
-    gsap.fromTo(
-      closeButtonRef.current,
-      { opacity: 0, scale: 0.5 },
-      { opacity: 1, scale: 1, duration: 0.5, delay: 0.3, ease: "back.out(1.7)" }
-    );
-    
-    // Card entrance animation
-    cardTimeline.current
-      .fromTo(
-        cardRef.current,
-        { opacity: 0, y: 30, scale: 0.9 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.7)" }
-      )
-      .fromTo(
-        logoRef.current,
+    if (closeButtonRef.current) {
+      gsap.fromTo(
+        closeButtonRef.current,
         { opacity: 0, scale: 0.5 },
-        { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-        "-=0.4"
-      )
-      .fromTo(
-        badgeRef.current,
-        { opacity: 0, scale: 0.5 },
-        { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-        "-=0.3"
-      )
-      .fromTo(
-        userInfoRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
-        "-=0.2"
-      );
-      
-    if (tierInfoRef.current) {
-      cardTimeline.current.fromTo(
-        tierInfoRef.current,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
-        "-=0.1"
+        { opacity: 1, scale: 1, duration: 0.5, delay: 0.3, ease: "back.out(1.7)" }
       );
     }
     
+    // Card entrance animation
+    if (cardRef.current) {
+      cardTimeline.current
+        .fromTo(
+          cardRef.current,
+          { opacity: 0, y: 30, scale: 0.9 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.7)" }
+        );
+      
+      if (logoRef.current) {
+        cardTimeline.current.fromTo(
+          logoRef.current,
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+          "-=0.4"
+        );
+      }
+      
+      if (badgeRef.current) {
+        cardTimeline.current.fromTo(
+          badgeRef.current,
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
+          "-=0.3"
+        );
+      }
+      
+      if (userInfoRef.current) {
+        cardTimeline.current.fromTo(
+          userInfoRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+          "-=0.2"
+        );
+      }
+      
+      if (tierInfoRef.current) {
+        cardTimeline.current.fromTo(
+          tierInfoRef.current,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+          "-=0.1"
+        );
+      }
+    }
+    
     // Apply tier-specific animations
-    applyTierAnimations(userData.membershipTier);
+    if (userData.membershipTier) {
+      applyTierAnimations(userData.membershipTier);
+    }
     
   }, [userData]);
   
   // Function to apply tier-specific animations
   const applyTierAnimations = (tier) => {
+    if (!cardRef.current || !tierTimeline.current) return;
+    
     // Clear previous tier animations
-    if (tierTimeline.current) tierTimeline.current.clear();
+    tierTimeline.current.clear();
     
     switch(tier) {
       case "gold":
@@ -237,12 +321,14 @@ export default function MembershipCardHolder() {
           });
         
         // Badge glow
-        gsap.to(badgeRef.current, {
-          filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.7))",
-          repeat: -1,
-          yoyo: true,
-          duration: 1.5
-        });
+        if (badgeRef.current) {
+          gsap.to(badgeRef.current, {
+            filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.7))",
+            repeat: -1,
+            yoyo: true,
+            duration: 1.5
+          });
+        }
         break;
         
       case "diamond":
@@ -284,13 +370,15 @@ export default function MembershipCardHolder() {
         });
         
         // Badge subtle rotation
-        gsap.to(badgeRef.current, {
-          rotation: 10,
-          duration: 2,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut"
-        });
+        if (badgeRef.current) {
+          gsap.to(badgeRef.current, {
+            rotation: 10,
+            duration: 2,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+          });
+        }
         break;
         
       case "emerald":
@@ -310,13 +398,15 @@ export default function MembershipCardHolder() {
           });
         
         // Badge pulse
-        gsap.to(badgeRef.current, {
-          scale: 1.1,
-          duration: 1.5,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut"
-        });
+        if (badgeRef.current) {
+          gsap.to(badgeRef.current, {
+            scale: 1.1,
+            duration: 1.5,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+          });
+        }
         break;
         
       case "tropez":
@@ -385,12 +475,14 @@ export default function MembershipCardHolder() {
         }
         
         // Badge rotation
-        gsap.to(badgeRef.current, {
-          rotation: 360,
-          duration: 10,
-          repeat: -1,
-          ease: "none"
-        });
+        if (badgeRef.current) {
+          gsap.to(badgeRef.current, {
+            rotation: 360,
+            duration: 10,
+            repeat: -1,
+            ease: "none"
+          });
+        }
         
         // Cleanup function to remove event listeners
         return () => {
@@ -416,22 +508,27 @@ export default function MembershipCardHolder() {
 
   const handleCloseCard = () => {
     // Animation for closing
-    gsap.to(cardRef.current, {
-      opacity: 0,
-      y: 30,
-      scale: 0.9,
-      duration: 0.5,
-      ease: "power2.in",
-      onComplete: () => {
-        // Navigate to homepage after animation completes
-        window.location.hash = "homePage";
-      }
-    });
+    if (cardRef.current) {
+      gsap.to(cardRef.current, {
+        opacity: 0,
+        y: 30,
+        scale: 0.9,
+        duration: 0.5,
+        ease: "power2.in",
+        onComplete: () => {
+          // Navigate to homepage after animation completes
+          window.location.hash = "homePage";
+        }
+      });
+    } else {
+      // Fallback if card ref is not available
+      window.location.hash = "homePage";
+    }
   };
 
   // Format active days with proper suffix
   const formatActiveDays = (days) => {
-    if (!days && days !== 0) return "N/A";
+    if (days === undefined || days === null) return "N/A";
     
     const dayNum = parseInt(days, 10);
     return `${dayNum} day${dayNum !== 1 ? 's' : ''}`;
@@ -448,8 +545,20 @@ export default function MembershipCardHolder() {
     });
   };
 
-  // Show loading state
-  if (loading) {
+  // Show auth loading state
+  if (authLoading) {
+    return (
+      <div id="membershipCardHolder" className="membership" ref={pageRef}>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Checking authentication status...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show data loading state
+  if (loading && isAuthenticated) {
     return (
       <div id="membershipCardHolder" className="membership" ref={pageRef}>
         <div className="loading-container">
@@ -522,8 +631,8 @@ export default function MembershipCardHolder() {
 
       <div 
         id="membershipCard" 
-        className={`tier-${userData.membershipTier}`}
-        data-badge={userData.membershipTier}
+        className={`tier-${userData.membershipTier || 'basic'}`}
+        data-badge={userData.membershipTier || 'basic'}
         ref={cardRef}
       >
         {/* Top Section of the Membership Card */}
@@ -531,7 +640,7 @@ export default function MembershipCardHolder() {
           <span id="cardBadgeWrapper">
             <div 
               className={`badgeWrapper active`} 
-              data-tier={userData.membershipTier}
+              data-tier={userData.membershipTier || 'basic'}
             >
               <img 
                 src={getBadgeImage(userData.membershipTier)} 
@@ -548,8 +657,8 @@ export default function MembershipCardHolder() {
         {/* Bottom Section of the Membership Card */}
         <div id="bottomCardSection">
           <div id="userName" ref={userInfoRef}>
-            <p className="member-name">{`${userData.firstName} ${userData.last_name}`}</p>
-            <p className="member-id">{userData.cpNumber}</p>
+            <p className="member-name">{`${userData.firstName || ''} ${userData.last_name || ''}`}</p>
+            <p className="member-id">{userData.cpNumber || 'CP000000'}</p>
             <p className="member-active">
               Active for: <span className="days-count">{formatActiveDays(userData.activeDays)}</span>
             </p>
@@ -575,7 +684,7 @@ export default function MembershipCardHolder() {
         </div>
       </div>
       
-      {/* Membership Actions */}
+      {/* Membership Actions
       {isAuthenticated && (
         <div className="membership-actions">
           <button 
@@ -591,55 +700,55 @@ export default function MembershipCardHolder() {
             Upgrade Tier
           </button>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
 
 // Helper function to get benefits based on tier (not displayed but available for future use)
-const getTierBenefits = (tier) => {
-  if (!tier) return ['Standard membership benefits'];
+// const getTierBenefits = (tier) => {
+//   if (!tier) return ['Standard membership benefits'];
   
-  switch(tier.toLowerCase()) {
-    case 'gold':
-      return [
-        '15% discount on all products',
-        'Free shipping on orders over R500',
-        'Early access to new products',
-        'Exclusive Gold member events'
-      ];
-    case 'diamond':
-      return [
-        '20% discount on all products',
-        'Free shipping on all orders',
-        'Priority access to new products',
-        'Exclusive Diamond member events',
-        'Personal shopping assistant'
-      ];
-    case 'emerald':
-      return [
-        '25% discount on all products',
-        'Free shipping on all orders',
-        'VIP access to new products',
-        'Exclusive Emerald member events',
-        'Personal shopping assistant',
-        'Monthly free product sample'
-      ];
-    case 'tropez':
-      return [
-        '30% discount on all products',
-        'Free shipping on all orders',
-        'VIP access to new products and limited editions',
-        'Exclusive Tropez member events',
-        'Dedicated personal shopping assistant',
-        'Monthly free product box',
-        'Access to Tropez lounge'
-      ];
-    default: // basic
-      return [
-        '5% discount on selected products',
-        'Member-only promotions',
-        'Birthday special offer'
-      ];
-  }
-};
+//   switch(tier.toLowerCase()) {
+//     case 'gold':
+//       return [
+//         '15% discount on all products',
+//         'Free shipping on orders over R500',
+//         'Early access to new products',
+//         'Exclusive Gold member events'
+//       ];
+//     case 'diamond':
+//       return [
+//         '20% discount on all products',
+//         'Free shipping on all orders',
+//         'Priority access to new products',
+//         'Exclusive Diamond member events',
+//         'Personal shopping assistant'
+//       ];
+//     case 'emerald':
+//       return [
+//         '25% discount on all products',
+//         'Free shipping on all orders',
+//         'VIP access to new products',
+//         'Exclusive Emerald member events',
+//         'Personal shopping assistant',
+//         'Monthly free product sample'
+//       ];
+//     case 'tropez':
+//       return [
+//         '30% discount on all products',
+//         'Free shipping on all orders',
+//         'VIP access to new products and limited editions',
+//         'Exclusive Tropez member events',
+//         'Dedicated personal shopping assistant',
+//         'Monthly free product box',
+//         'Access to Tropez lounge'
+//       ];
+//     default: // basic
+//       return [
+//         '5% discount on selected products',
+//         'Member-only promotions',
+//         'Birthday special offer'
+//       ];
+//   }
+// };

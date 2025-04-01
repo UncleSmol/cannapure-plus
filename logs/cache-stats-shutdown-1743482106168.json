@@ -1,0 +1,120 @@
+{
+  "timestamp": "2025-04-01T04:35:06.168Z",
+  "current": {
+    "timestamp": 1743482106168,
+    "cache": {
+      "hits": 0,
+      "misses": 6,
+      "sets": 6,
+      "deletes": 3,
+      "refreshes": 0,
+      "lastReset": 1743482068076,
+      "backgroundJobs": 1,
+      "invalidations": {
+        "manual": 3,
+        "automatic": 0,
+        "targeted": 0
+      },
+      "keys": 3,
+      "memory": 50,
+      "vsize": 480,
+      "hitRatio": 0,
+      "uptime": 38092,
+      "activeJobs": 3
+    },
+    "system": {
+      "memory": {
+        "rss": 70750208,
+        "heapTotal": 17670144,
+        "heapUsed": 16402440,
+        "external": 1266185
+      },
+      "uptime": 38.420851688
+    },
+    "responseTime": {
+      "cached": null,
+      "uncached": null
+    }
+  },
+  "history": [
+    {
+      "timestamp": 1743482106168,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1743482068076,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 38092,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 70750208,
+          "heapTotal": 17670144,
+          "heapUsed": 16402440,
+          "external": 1266185
+        },
+        "uptime": 38.420851688
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    },
+    {
+      "timestamp": 1743482106168,
+      "cache": {
+        "hits": 0,
+        "misses": 6,
+        "sets": 6,
+        "deletes": 3,
+        "refreshes": 0,
+        "lastReset": 1743482068076,
+        "backgroundJobs": 1,
+        "invalidations": {
+          "manual": 3,
+          "automatic": 0,
+          "targeted": 0
+        },
+        "keys": 3,
+        "memory": 50,
+        "vsize": 480,
+        "hitRatio": 0,
+        "uptime": 38092,
+        "activeJobs": 3
+      },
+      "system": {
+        "memory": {
+          "rss": 70750208,
+          "heapTotal": 17670144,
+          "heapUsed": 16412096,
+          "external": 1266225
+        },
+        "uptime": 38.420966445
+      },
+      "responseTime": {
+        "cached": null,
+        "uncached": null
+      }
+    }
+  ],
+  "issues": [],
+  "thresholds": {
+    "hitRatio": 0.7,
+    "memoryUsage": 104857600,
+    "keysCount": 10000,
+    "responseTime": 200
+  }
+}
