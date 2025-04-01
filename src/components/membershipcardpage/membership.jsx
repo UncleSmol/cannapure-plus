@@ -1,45 +1,20 @@
-
-import React, { useRef, useEffect, useState, useContext } from "react";
-import { gsap } from "gsap";
-import axios from "axios";
+import React, { useRef, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthProvider";
 import "./membership.css";
 
-// Import images
+// Import utility functions
+import { TIER_INFO } from "./utils/constants";
+import { applyTierAnimations, applyEntranceAnimations, animateCardClose } from "./utils/animations";
+import { fetchMembershipData, createMockMembershipData, getErrorMessage } from "./utils/dataUtils";
+import { formatDate, calculateActiveDays, formatActiveDays } from "./utils/dateUtils";
+import { determineTierFromDays } from "./utils/tierUtils";
+import { getBadgeImage, getBadgeAltText } from "./utils/badgeUtils";
+
+// Import logo image
 import logoPlaceholder from "../../assets/images/cannapure-plus-logo.png";
-import goldBadge from "../../assets/images/badges/gold-badge.png";
-import diamondBadge from "../../assets/images/badges/diamond-badge.png";
-import emeraldBadge from "../../assets/images/badges/emerald-badge.png";
-import tropezBadge from "../../assets/images/badges/tropez-badge.png";
-
-// API URL configuration
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-// Tier information for display
-const TIER_INFO = {
-  basic: {
-    name: "Basic",
-    description: "Welcome to Cannapure"
-  },
-  gold: {
-    name: "Gold",
-    description: "Premium member"
-  },
-  diamond: {
-    name: "Diamond",
-    description: "Elite member"
-  },
-  emerald: {
-    name: "Emerald",
-    description: "VIP member"
-  },
-  tropez: {
-    name: "Tropez",
-    description: "Exclusive member"
-  }
-};
 
 export default function MembershipCardHolder() {
+  // Create refs for DOM elements
   const pageRef = useRef(null);
   const cardRef = useRef(null);
   const badgeRef = useRef(null);
@@ -47,10 +22,7 @@ export default function MembershipCardHolder() {
   const userInfoRef = useRef(null);
   const closeButtonRef = useRef(null);
   const tierInfoRef = useRef(null);
-  
-  // Animation timelines
-  const cardTimeline = useRef(null);
-  const tierTimeline = useRef(null);
+  const infoPanelsRef = useRef(null);
   
   // State for user data with loading and error handling
   const [userData, setUserData] = useState(null);
@@ -59,7 +31,15 @@ export default function MembershipCardHolder() {
   
   // Get authentication context
   const { isAuthenticated, user, token, loading: authLoading } = useAuth();
+  // Add this line to get token from localStorage if not provided by context
+  const authToken = token || localStorage.getItem('token');
 
+  // TESTING: Override active days for testing different tiers
+  // Change this value to test different tiers:
+  // 0-59: Basic, 60-119: Gold, 120-239: Diamond, 240-479: Emerald, 480+: Tropez
+  const testActiveDays = null; // Set to null to use actual calculated days
+
+  // Debug auth information
   useEffect(() => {
     console.log('Auth Debug in MembershipCardHolder:', {
       isAuthenticated,
@@ -100,29 +80,11 @@ export default function MembershipCardHolder() {
     }
   }, [isAuthenticated, user, token, authLoading]);
 
-  // Function to get badge image based on membership tier
-  const getBadgeImage = (tier) => {
-    if (!tier) return logoPlaceholder;
-    
-    switch(tier) {
-      case 'gold':
-        return goldBadge;
-      case 'diamond':
-        return diamondBadge;
-      case 'emerald':
-        return emeraldBadge;
-      case 'tropez':
-        return tropezBadge;
-      default:
-        return logoPlaceholder; // Default badge for basic tier
-    }
-  };
-
   // Fetch user data from API
   useEffect(() => {
     let isMounted = true; // Flag to prevent state updates after unmount
     
-    const fetchUserData = async () => {
+    const getMembershipData = async () => {
       // Don't proceed if auth is still loading
       if (authLoading) {
         console.log("Auth is still loading, waiting...");
@@ -130,7 +92,7 @@ export default function MembershipCardHolder() {
       }
   
       // Don't proceed if not authenticated
-      if (!isAuthenticated || !token) {
+      if (!isAuthenticated || !authToken) {
         console.warn('User is not authenticated, cannot fetch membership data');
         if (isMounted) {
           setError('Please log in to view your membership details');
@@ -144,404 +106,75 @@ export default function MembershipCardHolder() {
           setLoading(true);
         }
         
-        // Using proper endpoint structure
-        const endpoint = '/user/membership';
-        console.log('Fetching membership data from:', `${API_URL}/api${endpoint}`);
+        // Fetch membership data
+        const data = await fetchMembershipData(authToken);
         
-        // Set up request config with auth token
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        };
-        
-        // Make the API request with the correct URL
-        const response = await axios.get(`${API_URL}/api${endpoint}`, config);
-        
-        console.log('Membership data received:', response.data);
         if (isMounted) {
-          setUserData(response.data);
+          setUserData(data);
           setLoading(false);
         }
       } catch (err) {
         console.error("Error fetching user data:", err);
         
-        // Try fallback endpoint if main one fails
-        try {
-          console.log('Trying fallback endpoint');
-          const fallbackResponse = await axios.get(`${API_URL}/api/membership`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          console.log('Fallback data received:', fallbackResponse.data);
-          if (isMounted) {
-            setUserData(fallbackResponse.data);
-            setLoading(false);
-          }
-        } catch (fallbackErr) {
-          console.error("Fallback endpoint also failed:", fallbackErr);
+        if (isMounted) {
+          setError(getErrorMessage(err));
+          setLoading(false);
           
-          if (isMounted) {
-            if (err.response && err.response.status === 401) {
-              setError('Your session has expired. Please log in again.');
-            } else if (err.response && err.response.status === 404) {
-              setError('No membership found for your account.');
-            } else {
-              setError("Failed to load membership data. Please try again.");
-            }
-            
-            setLoading(false);
-            
-            // If we get here, try using fallback mock data based on the user context
-            console.log('Using fallback mock data from user context');
-            if (user) {
-              const mockData = {
-                firstName: user.firstName || user.first_name || 'User',
-                last_name: user.lastName || user.last_name || '',
-                cpNumber: user.cpNumber || `CP${String(user.id || '000000').padStart(6, '0')}`,
-                membershipTier: user.membershipTier || user.membership_tier || 'basic',
-                activeDays: 0,
-                membershipStatus: 'ACTIVE'
-              };
-              setUserData(mockData);
-            }
+          // If we get here, try using fallback mock data based on the user context
+          console.log('Using fallback mock data from user context');
+          if (user) {
+            const mockData = createMockMembershipData(user);
+            setUserData(mockData);
           }
         }
       }
     };
 
-    fetchUserData();
+    getMembershipData();
     
     // Cleanup function to prevent memory leaks
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, token, user, authLoading]); // Added authLoading to dependencies
+  }, [isAuthenticated, authToken, user, authLoading]); // Added authLoading to dependencies
 
-  // Setup base animations
+  // Setup animations
   useEffect(() => {
     if (!userData) return;
     
-    // Clear any existing animations
-    if (cardTimeline.current) cardTimeline.current.kill();
-    if (tierTimeline.current) tierTimeline.current.kill();
+    // Apply entrance animations
+    const refs = {
+      pageRef,
+      cardRef,
+      logoRef,
+      badgeRef,
+      userInfoRef,
+      tierInfoRef,
+      infoPanelsRef,
+      closeButtonRef
+    };
     
-    // Initialize timelines
-    cardTimeline.current = gsap.timeline();
-    tierTimeline.current = gsap.timeline({ repeat: -1 });
+    applyEntranceAnimations(refs);
     
-    // Page fade in
-    gsap.fromTo(
-      pageRef.current,
-      { opacity: 0 },
-      { opacity: 1, duration: 0.6, ease: "power2.out" }
-    );
+    // Calculate active days and determine tier
+    const activeDays = testActiveDays !== null ? testActiveDays : calculateActiveDays(userData.issuedDate);
+    const calculatedTier = determineTierFromDays(activeDays);
     
-    // Close button animation
-    if (closeButtonRef.current) {
-      gsap.fromTo(
-        closeButtonRef.current,
-        { opacity: 0, scale: 0.5 },
-        { opacity: 1, scale: 1, duration: 0.5, delay: 0.3, ease: "back.out(1.7)" }
-      );
-    }
+    // Apply tier-specific animations based on calculated tier
+    const cleanup = applyTierAnimations(calculatedTier, { cardRef, badgeRef });
     
-    // Card entrance animation
-    if (cardRef.current) {
-      cardTimeline.current
-        .fromTo(
-          cardRef.current,
-          { opacity: 0, y: 30, scale: 0.9 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.7)" }
-        );
-      
-      if (logoRef.current) {
-        cardTimeline.current.fromTo(
-          logoRef.current,
-          { opacity: 0, scale: 0.5 },
-          { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-          "-=0.4"
-        );
+    // Cleanup function
+    return () => {
+      if (typeof cleanup === 'function') {
+        cleanup();
       }
-      
-      if (badgeRef.current) {
-        cardTimeline.current.fromTo(
-          badgeRef.current,
-          { opacity: 0, scale: 0.5 },
-          { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" },
-          "-=0.3"
-        );
-      }
-      
-      if (userInfoRef.current) {
-        cardTimeline.current.fromTo(
-          userInfoRef.current,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
-          "-=0.2"
-        );
-      }
-      
-      if (tierInfoRef.current) {
-        cardTimeline.current.fromTo(
-          tierInfoRef.current,
-          { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
-          "-=0.1"
-        );
-      }
-    }
-    
-    // Apply tier-specific animations
-    if (userData.membershipTier) {
-      applyTierAnimations(userData.membershipTier);
-    }
-    
-  }, [userData]);
-  
-  // Function to apply tier-specific animations
-  const applyTierAnimations = (tier) => {
-    if (!cardRef.current || !tierTimeline.current) return;
-    
-    // Clear previous tier animations
-    tierTimeline.current.clear();
-    
-    switch(tier) {
-      case "gold":
-        // Gold tier - Subtle shimmer effect
-        tierTimeline.current
-          .to(cardRef.current, {
-            boxShadow: "0 15px 40px rgba(212, 175, 55, 0.5)",
-            duration: 2,
-            ease: "sine.inOut"
-          })
-          .to(cardRef.current, {
-            boxShadow: "0 10px 30px rgba(212, 175, 55, 0.3)",
-            duration: 2,
-            ease: "sine.inOut"
-          });
-        
-        // Badge glow
-        if (badgeRef.current) {
-          gsap.to(badgeRef.current, {
-            filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.7))",
-            repeat: -1,
-            yoyo: true,
-            duration: 1.5
-          });
-        }
-        break;
-        
-      case "diamond":
-        // Diamond tier - Prismatic effect
-        tierTimeline.current
-          .to(cardRef.current, {
-            boxShadow: "0 15px 40px rgba(185, 242, 255, 0.5)",
-            duration: 2,
-            ease: "sine.inOut"
-          })
-          .to(cardRef.current, {
-            boxShadow: "0 10px 30px rgba(185, 242, 255, 0.3)",
-            duration: 2,
-            ease: "sine.inOut"
-          });
-        
-        // Create shine effect
-        const shineElement = document.createElement("div");
-        shineElement.className = "shine-effect";
-        cardRef.current.appendChild(shineElement);
-        
-        gsap.set(shineElement, {
-          position: "absolute",
-          top: 0,
-          left: "-100%",
-          width: "50%",
-          height: "100%",
-          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-          zIndex: 1,
-          pointerEvents: "none"
-        });
-        
-        gsap.to(shineElement, {
-          left: "100%",
-          duration: 3,
-          repeat: -1,
-          repeatDelay: 2,
-          ease: "power2.inOut"
-        });
-        
-        // Badge subtle rotation
-        if (badgeRef.current) {
-          gsap.to(badgeRef.current, {
-            rotation: 10,
-            duration: 2,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-          });
-        }
-        break;
-        
-      case "emerald":
-        // Emerald tier - Breathing effect
-        tierTimeline.current
-          .to(cardRef.current, {
-            scale: 1.02,
-            boxShadow: "0 15px 40px rgba(80, 200, 120, 0.5)",
-            duration: 2,
-            ease: "sine.inOut"
-          })
-          .to(cardRef.current, {
-            scale: 1,
-            boxShadow: "0 10px 30px rgba(80, 200, 120, 0.3)",
-            duration: 2,
-            ease: "sine.inOut"
-          });
-        
-        // Badge pulse
-        if (badgeRef.current) {
-          gsap.to(badgeRef.current, {
-            scale: 1.1,
-            duration: 1.5,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-          });
-        }
-        break;
-        
-      case "tropez":
-        // Tropez tier - Premium 3D effect
-        
-        // Card subtle rotation on mouse move
-        const card = cardRef.current;
-        
-        const handleMouseMove = (e) => {
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left; // x position within the element
-          const y = e.clientY - rect.top; // y position within the element
-          
-          // Calculate rotation based on mouse position
-          const centerX = rect.width / 2;
-          const centerY = rect.height / 2;
-          const rotateY = ((x - centerX) / centerX) * 5; // Max 5 degrees
-          const rotateX = ((centerY - y) / centerY) * 5; // Max 5 degrees
-          
-          gsap.to(card, {
-            rotationY: rotateY,
-            rotationX: rotateX,
-            duration: 0.5,
-            ease: "power1.out"
-          });
-        };
-        
-        const handleMouseLeave = () => {
-          gsap.to(card, {
-            rotationY: 0,
-            rotationX: 0,
-            duration: 0.5,
-            ease: "power1.out"
-          });
-        };
-        
-        card.addEventListener("mousemove", handleMouseMove);
-        card.addEventListener("mouseleave", handleMouseLeave);
-        
-        // Create multiple shine effects for Tropez
-        for (let i = 0; i < 3; i++) {
-          const shineElement = document.createElement("div");
-          shineElement.className = `shine-effect shine-${i}`;
-          card.appendChild(shineElement);
-          
-          gsap.set(shineElement, {
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "30%",
-            height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
-            zIndex: 1,
-            pointerEvents: "none",
-            opacity: 0.7
-          });
-          
-          gsap.to(shineElement, {
-            left: "100%",
-            duration: 3 + i,
-            delay: i * 1.5,
-            repeat: -1,
-            repeatDelay: 1,
-            ease: "power2.inOut"
-          });
-        }
-        
-        // Badge rotation
-        if (badgeRef.current) {
-          gsap.to(badgeRef.current, {
-            rotation: 360,
-            duration: 10,
-            repeat: -1,
-            ease: "none"
-          });
-        }
-        
-        // Cleanup function to remove event listeners
-        return () => {
-          card.removeEventListener("mousemove", handleMouseMove);
-          card.removeEventListener("mouseleave", handleMouseLeave);
-        };
-        
-      default:
-        // Basic tier - subtle pulse
-        tierTimeline.current
-          .to(cardRef.current, {
-            scale: 1.01,
-            duration: 2,
-            ease: "sine.inOut"
-          })
-          .to(cardRef.current, {
-            scale: 1,
-            duration: 2,
-            ease: "sine.inOut"
-          });
-    }
-  };
+    };
+  }, [userData, testActiveDays]);
 
   const handleCloseCard = () => {
-    // Animation for closing
-    if (cardRef.current) {
-      gsap.to(cardRef.current, {
-        opacity: 0,
-        y: 30,
-        scale: 0.9,
-        duration: 0.5,
-        ease: "power2.in",
-        onComplete: () => {
-          // Navigate to homepage after animation completes
-          window.location.hash = "homePage";
-        }
-      });
-    } else {
-      // Fallback if card ref is not available
+    // Navigate to homepage after animation completes
+    animateCardClose(cardRef, () => {
       window.location.hash = "homePage";
-    }
-  };
-
-  // Format active days with proper suffix
-  const formatActiveDays = (days) => {
-    if (days === undefined || days === null) return "N/A";
-    
-    const dayNum = parseInt(days, 10);
-    return `${dayNum} day${dayNum !== 1 ? 's' : ''}`;
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
     });
   };
 
@@ -606,14 +239,20 @@ export default function MembershipCardHolder() {
     );
   }
 
-  // Get tier information
-  const tierInfo = TIER_INFO[userData.membershipTier] || TIER_INFO.basic;
+  // Calculate active days (either from test value or actual calculation)
+  const activeDays = testActiveDays !== null ? testActiveDays : calculateActiveDays(userData.issuedDate);
+  
+  // Determine tier based on active days
+  const calculatedTier = determineTierFromDays(activeDays);
+  
+  // Get tier information based on calculated tier
+  const tierInfo = TIER_INFO[calculatedTier] || TIER_INFO.basic;
   
   // Determine membership status class
   const getStatusClass = () => {
     const status = userData.membershipStatus || userData.status;
     if (status && status.toUpperCase() !== 'ACTIVE') return 'status-inactive';
-    if (userData.activeDays < 30) return 'status-expiring';
+    if (activeDays < 30) return 'status-expiring';
     return 'status-active';
   };
 
@@ -629,126 +268,84 @@ export default function MembershipCardHolder() {
         ×
       </div>
 
-      <div 
-        id="membershipCard" 
-        className={`tier-${userData.membershipTier || 'basic'}`}
-        data-badge={userData.membershipTier || 'basic'}
-        ref={cardRef}
-      >
-        {/* Top Section of the Membership Card */}
-        <div id="topCardSection">
-          <span id="cardBadgeWrapper">
-            <div 
-              className={`badgeWrapper active`} 
-              data-tier={userData.membershipTier || 'basic'}
-            >
-              <img 
-                src={getBadgeImage(userData.membershipTier)} 
-                alt={`${tierInfo.name} badge`} 
-              />
-            </div>
-          </span>
+      <div className="membership-container">
+        {/* Membership Card - Using calculated tier instead of userData.membershipTier */}
+        <div 
+          id="membershipCard" 
+          className={`tier-${calculatedTier}`}
+          data-badge={calculatedTier}
+          ref={cardRef}
+        >
+          {/* Top Section of the Membership Card */}
+          <div id="topCardSection">
+            <span id="cardBadgeWrapper">
+              <div 
+                className={`badgeWrapper active`} 
+                data-tier={calculatedTier}
+              >
+                <img 
+                  src={getBadgeImage(calculatedTier)} 
+                  alt={`${tierInfo.name} badge`} 
+                />
+              </div>
+            </span>
 
-          <span id="cardLogo" ref={logoRef}>
-            <img src={logoPlaceholder} alt="Cannapure logo" />
-          </span>
-        </div>
-
-        {/* Bottom Section of the Membership Card */}
-        <div id="bottomCardSection">
-          <div id="userName" ref={userInfoRef}>
-            <p className="member-name">{`${userData.firstName || ''} ${userData.last_name || ''}`}</p>
-            <p className="member-id">{userData.cpNumber || 'CP000000'}</p>
-            <p className="member-active">
-              Active for: <span className="days-count">{formatActiveDays(userData.activeDays)}</span>
-            </p>
-            <div className="tier-info" ref={tierInfoRef}>
-              <span className="tier-name">{tierInfo.name}</span>
-              <span className="tier-description">{tierInfo.description}</span>
-              <span className={`membership-status ${getStatusClass()}`}>
-                {userData.membershipStatus || 'ACTIVE'}
-              </span>
-            </div>
-            {userData.issuedDate && (
-              <p className="issued-date">Issued: {formatDate(userData.issuedDate)}</p>
-            )}
+            <span id="cardLogo" ref={logoRef}>
+              <img src={logoPlaceholder} alt="Cannapure logo" />
+            </span>
           </div>
 
-          <div id="currentBadgeStatusWrapper">
-            <img
-              src={getBadgeImage(userData.membershipTier)}
-              alt={`${tierInfo.name} membership badge`}
-              ref={badgeRef}
-            />
+          {/* Bottom Section of the Membership Card - Only name, CP number, and active days */}
+          <div id="bottomCardSection">
+            <div id="userName" ref={userInfoRef}>
+              <p className="member-name">{`${userData.firstName || ''} ${userData.last_name || ''}`}</p>
+              <p className="member-id">{userData.cpNumber || 'CP000000'}</p>
+              <p className="member-active">
+                Active for: 
+                <span className="days-count"> {formatActiveDays(activeDays)}
+                </span>
+              </p>
+            </div>
+
+            <div id="currentBadgeStatusWrapper">
+              <img
+                src={getBadgeImage(calculatedTier)}
+                alt={getBadgeAltText(calculatedTier, tierInfo)}
+                ref={badgeRef}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* External Info Panels */}
+        <div className="membership-info-panels" ref={infoPanelsRef}>
+
+          {/* Account Status Panel */}
+          <div className="membership-info-panel">
+            <div className="info-panel__title">Account Status</div>
+            <div className="info-panel__content">
+              <div className="info-panel__label">Current Tier</div>
+              <div className="info-panel__value highlight">{tierInfo.name}</div>
+            </div>
+            <div className="info-panel__content">
+              <div className="info-panel__label">Status</div>
+              <div className={`info-panel__value ${getStatusClass()}`}>
+                {userData.membershipStatus || 'ACTIVE'}
+              </div>
+            </div>
+            {userData.issuedDate && (
+              <div className="info-panel__content">
+                <div className="info-panel__label">Issued Date</div>
+                <div className="info-panel__value">{formatDate(userData.issuedDate)}</div>
+              </div>
+            )}
+            <div className="info-panel__content">
+              <div className="info-panel__label">Active Days</div>
+              <div className="info-panel__value">{formatActiveDays(activeDays)}</div>
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Membership Actions
-      {isAuthenticated && (
-        <div className="membership-actions">
-          <button 
-            className="action-button primary"
-            onClick={() => window.location.hash = "renewMembership"}
-          >
-            Renew Membership
-          </button>
-          <button 
-            className="action-button secondary"
-            onClick={() => window.location.hash = "upgradeTier"}
-          >
-            Upgrade Tier
-          </button>
-        </div>
-      )} */}
     </div>
   );
 }
-
-// Helper function to get benefits based on tier (not displayed but available for future use)
-// const getTierBenefits = (tier) => {
-//   if (!tier) return ['Standard membership benefits'];
-  
-//   switch(tier.toLowerCase()) {
-//     case 'gold':
-//       return [
-//         '15% discount on all products',
-//         'Free shipping on orders over R500',
-//         'Early access to new products',
-//         'Exclusive Gold member events'
-//       ];
-//     case 'diamond':
-//       return [
-//         '20% discount on all products',
-//         'Free shipping on all orders',
-//         'Priority access to new products',
-//         'Exclusive Diamond member events',
-//         'Personal shopping assistant'
-//       ];
-//     case 'emerald':
-//       return [
-//         '25% discount on all products',
-//         'Free shipping on all orders',
-//         'VIP access to new products',
-//         'Exclusive Emerald member events',
-//         'Personal shopping assistant',
-//         'Monthly free product sample'
-//       ];
-//     case 'tropez':
-//       return [
-//         '30% discount on all products',
-//         'Free shipping on all orders',
-//         'VIP access to new products and limited editions',
-//         'Exclusive Tropez member events',
-//         'Dedicated personal shopping assistant',
-//         'Monthly free product box',
-//         'Access to Tropez lounge'
-//       ];
-//     default: // basic
-//       return [
-//         '5% discount on selected products',
-//         'Member-only promotions',
-//         'Birthday special offer'
-//       ];
-//   }
-// };

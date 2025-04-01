@@ -13,9 +13,80 @@
   background-image: var(--gradient-primary);
 }
 
+/* Card Container with Info Panels */
+.membership-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  gap: var(--space-4);
+}
+
+/* Info Panel for External Card Info */
+.membership-info-panel {
+  width: 100%;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  color: var(--white);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-normal);
+  font-family: var(--font-primary);
+}
+
+.membership-info-panel:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.info-panel__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-2);
+  color: var(--accent-green);
+}
+
+.info-panel__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.info-panel__content:last-child {
+  margin-bottom: 0;
+}
+
+.info-panel__label {
+  font-size: var(--text-base);
+  color: var(--light-gray);
+}
+
+.info-panel__value {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}
+
+.info-panel__value.highlight {
+  color: var(--accent-green);
+  font-weight: var(--weight-bold);
+}
+
+/* Membership info panels container */
+.membership-info-panels {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+}
+
 .membership-card__close {
   position: absolute;
-  top: 60px;
+  top: 80px;
   right: 20px;
   width: 40px;
   height: 40px;
@@ -30,6 +101,10 @@
   cursor: pointer;
   z-index: 10;
   transition: all var(--transition-normal);
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
 }
 
 .membership-card__close:hover {
@@ -41,8 +116,8 @@
   width: 350px;
   height: 550px;
   background: var(--glass-bg);
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -159,24 +234,31 @@
   object-fit: contain;
 }
 
-/* Bottom Section */
+/* Bottom Section - Updated to include active days */
 #bottomCardSection {
   height: 40%;
   padding: var(--space-4);
   background: rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  -webkit-border-radius: 20px 20px 0 0;
+  -moz-border-radius: 20px 20px 0 0;
+  -ms-border-radius: 20px 20px 0 0;
+  -o-border-radius: 20px 20px 0 0;
+  border-radius: 20px 20px 0 0;
 }
 
 #userName {
   text-align: center;
   color: var(--white);
+  font-family: var(--font-display);
 }
 
 #userName p {
   margin: var(--space-2) 0;
   font-size: var(--text-lg);
+  font-family: var(--font-primary);
 }
 
 #userName p:first-child {
@@ -184,26 +266,105 @@
   font-weight: var(--weight-bold);
 }
 
-.days-count {
+#userName .member-active {
+  font-size: var(--text-base);
+  color: var(--light-gray);
+  margin-top: var(--space-3);
+}
+
+#userName .days-count {
   color: var(--accent-green);
   font-weight: var(--weight-bold);
 }
 
 #currentBadgeStatusWrapper {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: var(--space-4);
 }
 
 #currentBadgeStatusWrapper img {
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+/* Status classes */
+.status-active {
+  color: var(--accent-green);
+  font-family: var(--font-primary);
+}
+
+.status-inactive {
+  color: #dc3545;
+}
+
+.status-expiring {
+  color: #ffc107;
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container,
+.not-found-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--white);
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  font-family: var(--font-primary);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--accent-green);
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+.retry-button,
+.login-button,
+.home-button {
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent-green);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.retry-button:hover,
+.login-button:hover,
+.home-button:hover {
+  background: var(--light-green);
+  transform: translateY(-2px);
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+  .membership-container {
+    max-width: 320px;
+  }
+  
   #membershipCard {
     width: 300px;
     height: 480px;
@@ -226,6 +387,18 @@
   #userName p {
     font-size: var(--text-base);
   }
+  
+  .membership-info-panel {
+    padding: var(--space-3);
+  }
+  
+  .info-panel__title {
+    font-size: var(--text-base);
+  }
+  
+  .info-panel__value {
+    font-size: var(--text-base);
+  }
 }
 
 /* Animation for shimmer effect on Gold tier */
@@ -235,6 +408,26 @@
   }
   100% {
     background-position: 0% center;
+  }
+}
+
+/* Fade in animation for the entire membership page */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Spinner animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 

@@ -1,12 +1,28 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import "./home.css"; // Import home styles
+
+// Import the hero image directly
+import heroImage from "../../assets/images/clipboard-image-4.png";
 
 export default function HomePage() {
   const heroRef = useRef(null);
   const titleRef = useRef(null);
   const buttonsRef = useRef([]);
   const sectionsRef = useRef([]);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Handle image load success
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  // Handle image load error
+  const handleImageError = () => {
+    console.warn("Hero image failed to load, using CSS background fallback");
+    setImageError(true);
+  };
 
   useEffect(() => {
     // Hero Section Animation
@@ -55,12 +71,21 @@ export default function HomePage() {
   return (
     <section className="home-page">
       {/* Hero Section */}
-      <section className="hero" ref={heroRef}>
-        <img
-          src="../../assets/images/clipboard-image-4.png"
-          alt=""
-          className="hero__image"
-        />
+      <section 
+        className={`hero ${imageError ? 'hero--fallback' : ''}`} 
+        ref={heroRef}
+        style={imageError ? { backgroundImage: `url(${heroImage})` } : {}}
+      >
+        {/* Only render the img tag if we're not using the fallback */}
+        {!imageError && (
+          <img
+            src={heroImage}
+            alt="Cannapure hero"
+            className={`hero__image ${imageLoaded ? 'hero__image--loaded' : ''}`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+          />
+        )}
         <div className="hero__content">
           <h1 className="hero__title" ref={titleRef}>
             ELEVATE YOUR SENSES WITH QUALITY STRAINS

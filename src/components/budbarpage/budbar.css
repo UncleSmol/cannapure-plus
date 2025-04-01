@@ -186,6 +186,7 @@
 .category-section__description {
   padding: 0 var(--space-4);
   margin-top: 0;
+  font-family: var(--font-primary);
   font-size: var(--text-sm);
   opacity: 0.8;
   color: var(--white);
@@ -328,6 +329,11 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.lab-title{
+  font-family: var(--font-primary);
+  font-size: var(--text-3xl);
+}
+
 /* Ensure other text elements have the right color */
 .lab-title, 
 .lab-description {
@@ -336,6 +342,10 @@
   margin-top: -15px;
   margin-bottom: 40px;
   padding: 0 20px;
+}
+
+.lab-description{
+  font-family: var(--font-primary);
 }
 
 /* For screen readers */

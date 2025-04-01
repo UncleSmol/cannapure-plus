@@ -66,7 +66,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-      <div>
+      <div className="main-content-wrapper">
         <Header currentPage={currentPage} />
         <main className="main-content">
           {renderPage()}

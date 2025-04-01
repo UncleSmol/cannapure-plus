@@ -6,9 +6,8 @@
   height: auto;
   padding: 0;
   background: var(--gradient-primary);
-  min-height: calc(100vh - var(--header-height));
+  height: calc(100dvh - var(--header-height));
   position: fixed;
-  top: var(--header-height);
   left: 0;
   right: 0;
   bottom: 0;
@@ -54,7 +53,7 @@ overflow: hidden;
 }
 
 .hero__image {
-  background-image: url('../../assets/images/clipboard-image-4.png');
+  /* background-image: url('../../assets/images/clipboard-image-4.png'); */
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -63,7 +62,8 @@ overflow: hidden;
   left: 0;
   width: 100%;
   height: 100%;
-  object-position: center;
+  object-fit: cover;
+  object-position: top center;
   z-index: var(--z-negative);
 }
 
@@ -96,6 +96,7 @@ overflow: hidden;
 }
 
 .hero__subtitle {
+  font-family: var(--font-primary);
   font-size: var(--text-lg);
   color: var(--accent-green);
   max-width: 600px;
@@ -109,6 +110,7 @@ overflow: hidden;
   margin: 0 auto;
   width: 100%;
   max-width: 250px;
+  font-family: var(--font-primary);
 }
 
 .hero__button {
@@ -200,6 +202,7 @@ overflow: hidden;
   color: var(--light-gray);
   margin-bottom: var(--space-4);
   font-size: var(--text-sm);
+  font-family: var(--font-primary);
   line-height: 1.6;
 }
 

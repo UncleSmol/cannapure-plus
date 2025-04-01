@@ -3,6 +3,10 @@ import { gsap } from "gsap";
 import { useAuth } from "../../context/AuthProvider";
 import "./header.css";
 
+// Import the logo images directly
+import logoImage from "../../assets/images/cannapure-plus-logo.png";
+import signatureLogo from "../../sig/dev-doc-logo.svg";
+
 const Header = ({ currentPage }) => {
   const { isAuthenticated, logout, user } = useAuth();
   
@@ -18,6 +22,12 @@ const Header = ({ currentPage }) => {
   const menuItemsRef = useRef([]);
   const overlayRef = useRef(null);
   const headerRef = useRef(null);
+  const logoRef = useRef(null);
+  const signatureRef = useRef(null);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [signatureLoaded, setSignatureLoaded] = useState(false);
+  const [signatureError, setSignatureError] = useState(false);
 
   // Handle logout with error handling
   const handleLogout = async () => {
@@ -142,6 +152,23 @@ const Header = ({ currentPage }) => {
         stagger: 0.1,
         duration: 0.3,
       });
+      
+      // Animate logo and signature out
+      if (logoRef.current) {
+        gsap.to(logoRef.current, {
+          opacity: 0,
+          y: 20,
+          duration: 0.3,
+        });
+      }
+      
+      if (signatureRef.current) {
+        gsap.to(signatureRef.current, {
+          opacity: 0,
+          y: 20,
+          duration: 0.3,
+        });
+      }
     } else {
       // Opening animation
       if (overlayRef.current) {
@@ -163,6 +190,24 @@ const Header = ({ currentPage }) => {
         { x: 20, opacity: 0 },
         { x: 0, opacity: 1, stagger: 0.15, duration: 0.5 },
       );
+      
+      // Animate logo in
+      if (logoRef.current) {
+        gsap.fromTo(
+          logoRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, delay: 0.6, ease: "power2.out" }
+        );
+      }
+      
+      // Animate signature in
+      if (signatureRef.current) {
+        gsap.fromTo(
+          signatureRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 0.6, y: 0, duration: 0.5, delay: 0.8, ease: "power2.out" }
+        );
+      }
     }
   };
 
@@ -182,6 +227,28 @@ const Header = ({ currentPage }) => {
         },
       });
     }
+  };
+
+  // Handle logo image load success
+  const handleLogoLoad = () => {
+    setLogoLoaded(true);
+  };
+
+  // Handle logo image load error
+  const handleLogoError = () => {
+    console.warn("Mobile logo image failed to load");
+    setLogoError(true);
+  };
+  
+  // Handle signature image load success
+  const handleSignatureLoad = () => {
+    setSignatureLoaded(true);
+  };
+
+  // Handle signature image load error
+  const handleSignatureError = () => {
+    console.warn("Signature logo failed to load");
+    setSignatureError(true);
   };
 
   return (
@@ -240,43 +307,74 @@ const Header = ({ currentPage }) => {
           className={`mobile-nav ${mobileMenuOpen ? "menu-active" : ""}`}
           ref={mobileNavRef}
         >
-          <ul className="mobile-nav__list">
-            {menuItems.map((item, index) => (
-              <li
-                key={index}
-                className={`mobile-nav__item ${
-                  item.link && currentPage === item.link.substring(1) ? "active" : ""
-                }`}
-                ref={(el) => (menuItemsRef.current[index] = el)}
-                onClick={item.action ? item.action : handleNavItemClick}
-              >
-                <div className="mobile-nav__icon-wrapper">
-                  <div className="mobile-nav__icon">
+          <div className="mobile-nav-wrapper">
+            {/*Mobile Navigation List*/}
+            <ul className="mobile-nav__list">
+              {menuItems.map((item, index) => (
+                <li
+                  key={index}
+                  className={`mobile-nav__item ${
+                    item.link && currentPage === item.link.substring(1) ? "active" : ""
+                  }`}
+                  ref={(el) => (menuItemsRef.current[index] = el)}
+                  onClick={item.action ? item.action : handleNavItemClick}
+                >
+                  <div className="mobile-nav__icon-wrapper">
+                    <div className="mobile-nav__icon">
+                      {item.action ? (
+                        <button className="icon-button">
+                          <img src={item.icon} alt={`${item.name} Icon`} />
+                        </button>
+                      ) : (
+                        <a href={item.link}>
+                          <img src={item.icon} alt={`${item.name} Icon`} />
+                        </a>
+                      )}
+                    </div>
                     {item.action ? (
-                      <button className="icon-button">
-                        <img src={item.icon} alt={`${item.name} Icon`} />
+                      <button className="mobile-nav__text logout-button">
+                        {item.name}
                       </button>
                     ) : (
-                      <a href={item.link}>
-                        <img src={item.icon} alt={`${item.name} Icon`} />
+                      <a href={item.link} className="mobile-nav__text">
+                        {item.name}
                       </a>
                     )}
                   </div>
-                  {item.action ? (
-                    <button className="mobile-nav__text logout-button">
-                      {item.name}
-                    </button>
-                  ) : (
-                    <a href={item.link} className="mobile-nav__text">
-                      {item.name}
-                    </a>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mobile-logo">
-            <img src="./src/assets/images/cannapure-plus-logo.png" alt="" />
+                </li>
+              ))}
+            </ul>
+
+            {/* Cannapure Plus Logo on Mobile Navigation */}
+            <div className="mobile-logo">
+              <img 
+                src={logoImage} 
+                alt="Cannapure Plus Logo"
+                className={`mobile-logo__image ${logoLoaded ? 'mobile-logo__image--loaded' : ''}`}
+                onLoad={handleLogoLoad}
+                onError={handleLogoError}
+                ref={logoRef}
+              />
+            </div>
+          
+            {/* Signature Logo - Now properly wrapped in an anchor tag */}
+            <div className="signature-logo">
+              <a 
+                href="https://unclesmol.github.io/dev-doc/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="signature-logo__link"
+              >
+                <img 
+                  src={signatureLogo} 
+                  alt="Developer Signature"
+                  className={`signature-logo__image ${signatureLoaded ? 'signature-logo__image--loaded' : ''}`}
+                  onLoad={handleSignatureLoad}
+                  onError={handleSignatureError}
+                  ref={signatureRef}
+                />
+              </a>
+            </div>
           </div>
         </div>
       </header>

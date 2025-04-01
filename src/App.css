@@ -1,7 +1,12 @@
-/*Doest nothing but prevent a "crash" lol*/
+/*Doest nothing but prevent a "crash" lol -Update, lol I lied...sets a primary background color for the app*/
+
 
 *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+.main-content, .main-content-wrapper, #root{
+    background-image: var(--gradient-primary);
 }

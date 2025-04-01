@@ -1,6 +1,10 @@
 /* _variables.css */
 
 :root {
+   
+  }
+
+:root {
     /* Core Green Palette */
      --dark-green: #0A1F0F;      /* Deepest shadow green */
      --primary-green: #2A5E36;   /* Main brand green */
@@ -78,7 +82,7 @@
      /* Layout */
      --header-height: 60px;
      --max-width: 1200px;
-     --card-width: 180px !important;
+     --card-width: 280px !important;
  
      /* Z-index Scale */
      --z-negative: -1;
@@ -98,6 +102,11 @@
  
      /* Breakpoints */
      --breakpoint-mobile: 916px;  /* Changed from 700px to 916px */
+
+     /*Auth Variables*/
+     --error-red: #dc3545;
+     --success-green: #2E7D32;
+     --input-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
  }
  
  /* Media Query Breakpoints */
