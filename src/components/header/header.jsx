@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { gsap } from "gsap";
-import { useAuth } from "../../context/AuthProvider";
 import "./header.css";
 
 // Import the logo images directly
 import logoImage from "../../assets/images/cannapure-plus-logo.png";
 import signatureLogo from "../../sig/dev-doc-logo.svg";
 
-const Header = ({ currentPage }) => {
-  const { isAuthenticated, logout, user } = useAuth();
+const Header = () => {
+  const location = useLocation();
   
-  // Log authentication state for debugging
-  useEffect(() => {
-    console.log("Header auth state:", { isAuthenticated, user });
-  }, [isAuthenticated, user]);
+  // State management
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [signatureLoaded, setSignatureLoaded] = useState(false);
+  const [signatureError, setSignatureError] = useState(false);
+
+  // Refs
   const mobileNavRef = useRef(null);
   const hamburgerRef = useRef(null);
   const menuItemsRef = useRef([]);
@@ -24,102 +27,48 @@ const Header = ({ currentPage }) => {
   const headerRef = useRef(null);
   const logoRef = useRef(null);
   const signatureRef = useRef(null);
-  const [logoLoaded, setLogoLoaded] = useState(false);
-  const [logoError, setLogoError] = useState(false);
-  const [signatureLoaded, setSignatureLoaded] = useState(false);
-  const [signatureError, setSignatureError] = useState(false);
 
-  // Handle logout with error handling
-  const handleLogout = async () => {
-    console.log("Logout button clicked");
-    try {
-      await logout();
-      console.log("Logout successful");
-      window.location.hash = "homePage";
-      handleNavItemClick(); // Close mobile menu if open
-    } catch (error) {
-      console.error("Logout failed:", error);
-      // Show error to user if needed
-    }
-  };
-
-  // Menu items data - first 4 items that are always shown
-  const baseMenuItems = [
+  const menuItems = [
     {
       name: "HOME",
-      icon: "https://www.svgrepo.com/show/535437/home.svg",
-      link: "#homePage",
+      icon: "https://www.svgrepo.com/show/535363/home.svg",
+      to: "/",
     },
     {
-      name: "THE BUD BAR",
-      icon: "https://www.svgrepo.com/show/535332/cube.svg",
-      link: "#theBudBarPage",
+      name: "BUD BAR",
+      icon: "https://www.svgrepo.com/show/535344/flower.svg",
+      to: "/theBudBarPage",
     },
     {
       name: "MEMBERSHIP",
       icon: "https://www.svgrepo.com/show/535331/crown.svg",
-      link: "#membershipCardHolder",
+      to: "/membershipCardHolder",
     },
     {
       name: "TALK TO US",
       icon: "https://www.svgrepo.com/show/535320/comment-dots.svg",
-      link: "#talkToUsPage",
+      to: "/talkToUsPage",
     },
   ];
 
-  // Conditionally add login or logout based on authentication status
-  const menuItems = [
-    ...baseMenuItems,
-    isAuthenticated
-      ? {
-          name: "LOGOUT",
-          icon: "https://www.svgrepo.com/show/535364/door-open.svg",
-          action: handleLogout,
-        }
-      : {
-          name: "LOGIN/REGISTER",
-          icon: "https://www.svgrepo.com/show/535362/door.svg",
-          link: "#userAuthenticationPage",
-        },
-  ];
-
-  // Initial header animation
-  useEffect(() => {
-    gsap.from(".site-header", {
-    
-      // opacity: 0.8,
-      duration: 0.3,
-      ease: "power2.out",
-    });
-  }, []);
-  
   // Handle scroll behavior
   useEffect(() => {
     const controlHeader = () => {
       const currentScrollY = window.scrollY;
       
       if (currentScrollY <= 0) {
-        // At the top of the page, always show header
         setIsVisible(true);
       } else if (currentScrollY < lastScrollY) {
-        // Scrolling up, show header
         setIsVisible(true);
       } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        // Scrolling down and not at the top, hide header
-        // Only hide after scrolling down a bit (50px)
         setIsVisible(false);
       }
       
-      // Remember current scroll position for next comparison
       setLastScrollY(currentScrollY);
     };
     
     window.addEventListener('scroll', controlHeader);
-    
-    // Clean up event listener
-    return () => {
-      window.removeEventListener('scroll', controlHeader);
-    };
+    return () => window.removeEventListener('scroll', controlHeader);
   }, [lastScrollY]);
 
   // Toggle mobile navigation with animations
@@ -127,11 +76,36 @@ const Header = ({ currentPage }) => {
     const newMenuState = !mobileMenuOpen;
     setMobileMenuOpen(newMenuState);
 
-    // Toggle body scroll
     document.body.style.overflow = newMenuState ? "hidden" : "";
 
-    if (!newMenuState) {
-      // Closing animation
+    if (overlayRef.current) {
+      overlayRef.current.style.display = newMenuState ? "block" : "none";
+    }
+
+    if (newMenuState) {
+      // Opening animations
+      gsap.to(mobileNavRef.current, {
+        x: 0,
+        opacity: 1,
+        duration: 0.4,
+        ease: "power2.inOut",
+      });
+      gsap.to(overlayRef.current, {
+        opacity: 1,
+        duration: 0.3,
+      });
+      gsap.fromTo(
+        menuItemsRef.current,
+        { x: 20, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.3,
+        }
+      );
+    } else {
+      // Closing animations
       gsap.to(mobileNavRef.current, {
         opacity: 0,
         duration: 0.4,
@@ -152,100 +126,22 @@ const Header = ({ currentPage }) => {
         stagger: 0.1,
         duration: 0.3,
       });
-      
-      // Animate logo and signature out
-      if (logoRef.current) {
-        gsap.to(logoRef.current, {
-          opacity: 0,
-          y: 20,
-          duration: 0.3,
-        });
-      }
-      
-      if (signatureRef.current) {
-        gsap.to(signatureRef.current, {
-          opacity: 0,
-          y: 20,
-          duration: 0.3,
-        });
-      }
-    } else {
-      // Opening animation
-      if (overlayRef.current) {
-        overlayRef.current.style.display = "block";
-        gsap.to(overlayRef.current, {
-          opacity: 1,
-          duration: 0.3,
-        });
-      }
-
-      gsap.fromTo(
-        mobileNavRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.4, ease: "power2.inOut" },
-      );
-
-      gsap.fromTo(
-        menuItemsRef.current,
-        { x: 20, opacity: 0 },
-        { x: 0, opacity: 1, stagger: 0.15, duration: 0.5 },
-      );
-      
-      // Animate logo in
-      if (logoRef.current) {
-        gsap.fromTo(
-          logoRef.current,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.5, delay: 0.6, ease: "power2.out" }
-        );
-      }
-      
-      // Animate signature in
-      if (signatureRef.current) {
-        gsap.fromTo(
-          signatureRef.current,
-          { opacity: 0, y: 20 },
-          { opacity: 0.6, y: 0, duration: 0.5, delay: 0.8, ease: "power2.out" }
-        );
-      }
     }
   };
 
   const handleNavItemClick = () => {
-    setMobileMenuOpen(false);
-    document.body.style.overflow = "";
-
-    // Properly hide the overlay
-    if (overlayRef.current) {
-      gsap.to(overlayRef.current, {
-        opacity: 0,
-        duration: 0.3,
-        onComplete: () => {
-          if (overlayRef.current) {
-            overlayRef.current.style.display = "none";
-          }
-        },
-      });
+    if (mobileMenuOpen) {
+      toggleMobileNav();
     }
   };
 
-  // Handle logo image load success
-  const handleLogoLoad = () => {
-    setLogoLoaded(true);
-  };
-
-  // Handle logo image load error
+  // Handle image loading
+  const handleLogoLoad = () => setLogoLoaded(true);
   const handleLogoError = () => {
     console.warn("Mobile logo image failed to load");
     setLogoError(true);
   };
-  
-  // Handle signature image load success
-  const handleSignatureLoad = () => {
-    setSignatureLoaded(true);
-  };
-
-  // Handle signature image load error
+  const handleSignatureLoad = () => setSignatureLoaded(true);
   const handleSignatureError = () => {
     console.warn("Signature logo failed to load");
     setSignatureError(true);
@@ -253,7 +149,6 @@ const Header = ({ currentPage }) => {
 
   return (
     <>
-      {/* Overlay for mobile menu */}
       <div
         ref={overlayRef}
         className={`overlay ${mobileMenuOpen ? "active" : ""}`}
@@ -263,11 +158,11 @@ const Header = ({ currentPage }) => {
 
       <header 
         ref={headerRef} 
-        className={`site-header ${isVisible ? 'header-visible' : 'header-hidden'}`}>
-        {/* Logo */}
+        className={`site-header ${isVisible ? 'header-visible' : 'header-hidden'}`}
+      >
         <div className="site-header__logo">
           <h1 className="site-header__title">
-            <a href="#homePage">CANNAPURE+</a>
+            <Link to="/">CANNAPURE+</Link>
           </h1>
         </div>
 
@@ -277,16 +172,10 @@ const Header = ({ currentPage }) => {
             <li
               key={index}
               className={`site-header__nav-item ${
-                item.link && currentPage === item.link.substring(1) ? "active" : ""
+                location.pathname === item.to ? "active" : ""
               }`}
             >
-              {item.action ? (
-                <button onClick={item.action} className="logout-button">
-                  {item.name}
-                </button>
-              ) : (
-                <a href={item.link}>{item.name}</a>
-              )}
+              <Link to={item.to}>{item.name}</Link>
             </li>
           ))}
         </ul>
@@ -308,44 +197,30 @@ const Header = ({ currentPage }) => {
           ref={mobileNavRef}
         >
           <div className="mobile-nav-wrapper">
-            {/*Mobile Navigation List*/}
             <ul className="mobile-nav__list">
               {menuItems.map((item, index) => (
                 <li
                   key={index}
                   className={`mobile-nav__item ${
-                    item.link && currentPage === item.link.substring(1) ? "active" : ""
+                    location.pathname === item.to ? "active" : ""
                   }`}
                   ref={(el) => (menuItemsRef.current[index] = el)}
-                  onClick={item.action ? item.action : handleNavItemClick}
+                  onClick={handleNavItemClick}
                 >
                   <div className="mobile-nav__icon-wrapper">
                     <div className="mobile-nav__icon">
-                      {item.action ? (
-                        <button className="icon-button">
-                          <img src={item.icon} alt={`${item.name} Icon`} />
-                        </button>
-                      ) : (
-                        <a href={item.link}>
-                          <img src={item.icon} alt={`${item.name} Icon`} />
-                        </a>
-                      )}
+                      <Link to={item.to}>
+                        <img src={item.icon} alt={`${item.name} Icon`} />
+                      </Link>
                     </div>
-                    {item.action ? (
-                      <button className="mobile-nav__text logout-button">
-                        {item.name}
-                      </button>
-                    ) : (
-                      <a href={item.link} className="mobile-nav__text">
-                        {item.name}
-                      </a>
-                    )}
+                    <Link to={item.to} className="mobile-nav__text">
+                      {item.name}
+                    </Link>
                   </div>
                 </li>
               ))}
             </ul>
 
-            {/* Cannapure Plus Logo on Mobile Navigation */}
             <div className="mobile-logo">
               <img 
                 src={logoImage} 
@@ -357,7 +232,6 @@ const Header = ({ currentPage }) => {
               />
             </div>
           
-            {/* Signature Logo - Now properly wrapped in an anchor tag */}
             <div className="signature-logo">
               <a 
                 href="https://unclesmol.github.io/dev-doc/" 

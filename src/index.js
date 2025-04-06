@@ -1,12 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './components/css_utils/reset.css';
-import './components/css_utils/utilities.css';
+import { HashRouter } from 'react-router-dom';
 import App from './App';
+import './index.css';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+// Create router configuration with future flags
+const routerConfig = {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <HashRouter {...routerConfig}>
+      <App />
+    </HashRouter>
   </React.StrictMode>
 );

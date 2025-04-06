@@ -1,34 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./StrainCard.css";
-import logoPlaceholder from "../../assets/images/cannapure-plus-logo.png";
-import { fetchAllStrains } from "./StrainDataService";
-
-const StrainCardList = () => {
-  const [strains, setStrains] = useState([]);
-
-  useEffect(() => {
-    const loadStrains = async () => {
-      const strainsData = await fetchAllStrains();
-      setStrains(strainsData);
-    };
-    loadStrains();
-  }, []);
-
-  return (
-    <div className="strain-card-container">
-      {strains.map(strain => (
-        <StrainCard key={strain.id} {...strain} />
-      ))}
-    </div>
-  );
-};
+import logoPlaceholder from "../../assets/images/cannapure-plus-logo.png"; // Adjust the path as needed
 
 const StrainCard = ({
   id,
   name,
   type,
   image,
-  // thc,
   price,
   description,
   isSpecial = false,
@@ -57,13 +35,6 @@ const StrainCard = ({
           <p className="strain-card__description">{description}</p>
         )}
 
-        {/* {thc && (
-          <div className="strain-card__thc-content">
-            <span className="strain-card__thc-label">THC:</span>
-            <span className="strain-card__thc-value">{thc}</span>
-          </div>
-        )} */}
-
         <div className="strain-card__price-holder">
           <span className="strain-card__price">R{price}</span>
           <span className="strain-card__measurement">/g</span>
@@ -75,4 +46,4 @@ const StrainCard = ({
   );
 };
 
-export { StrainCardList, StrainCard };
+export default StrainCard;

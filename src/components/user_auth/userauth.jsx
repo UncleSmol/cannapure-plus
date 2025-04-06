@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { validateUserData } from "./validateUserData";
+import { useAuthNotification } from "../../hooks/useAuthNotification";
+import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
-import { useAuth } from "../../context/AuthProvider";
 import "./userauth.css";
 
 export default function UserAuth() {
-  const { login, register, isAuthenticated, loading, error, clearError } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
-    cpNumber: ""
+    cpdNumber: ""
   });
   const [userData, setUserData] = useState({
     firstName: "",
@@ -23,15 +22,16 @@ export default function UserAuth() {
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const [feedbackMessage, setFeedbackMessage] = useState({ type: "", message: "" });
   const errorRefs = useRef({});
+  const navigate = useNavigate();
+  const { login, register } = useAuthNotification();
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      window.location.hash = "homePage";
-    }
-  }, [isAuthenticated]);
+  // Add handleClick function
+  const handleClick = useCallback(() => {
+    // Handle forgot password or other click actions
+    console.log('Auth link clicked');
+    // Add your click handling logic here
+  }, []);
 
   // GSAP Animation Setup
   useEffect(() => {
@@ -43,14 +43,6 @@ export default function UserAuth() {
       });
     });
   }, []);
-
-  // Clear feedback when changing tabs
-  useEffect(() => {
-    setFeedbackMessage({ type: "", message: "" });
-    if (error) {
-      clearError();
-    }
-  }, [activeTab, error, clearError]);
 
   const animateError = (fieldName, show) => {
     const element = errorRefs.current[fieldName];
@@ -74,138 +66,61 @@ export default function UserAuth() {
     setErrors((prev) => ({ ...prev, [name]: fieldErrors[name] || null }));
   };
 
-  const handleLoginInputChange = (e) => {
-    const { name, value } = e.target;
-    setLoginData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear global error from auth context if present
-    if (error) {
-      clearError();
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
-    
-    // Clear global error from auth context if present
-    if (error) {
-      clearError();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { errors } = validateUserData(userData);
+    setErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      try {
+        const response = await register({
+          email: userData.email,
+          password: userData.password,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phoneNumber: userData.phoneNumber,
+          idNumber: userData.idNumber,
+          address: userData.address
+        });
+        
+        if (response.success) {
+          navigate('/');
+        }
+      } catch (error) {
+        setErrors({ register: error.message });
+      }
     }
   };
 
-  const handleLoginSubmit = async (e) => {
+  // Handle login form submission
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setFeedbackMessage({ type: "", message: "" });
-
     try {
-      console.log('Attempting login with:', { 
+      await login({
         email: loginData.email,
-        password: loginData.password ? '********' : '',
-        cpNumber: loginData.cpNumber || undefined
+        password: loginData.password,
+        cpNumber: loginData.cpdNumber
       });
-      
-      // Call the login function with the correct parameters
-      const result = await login(loginData);
-      
-      console.log('Login result:', result);
-      
-      if (!result.success && result.error) {
-        setFeedbackMessage({ 
-          type: "error", 
-          message: typeof result.error === 'string' 
-            ? result.error 
-            : "Login failed. Please check your credentials."
-        });
-      }
-      // On success, the useEffect with isAuthenticated will redirect
+      // Navigate to home page on successful login
+      navigate('/');
     } catch (error) {
-      console.error("Login error:", error);
-      
-      // Get a proper error message
-      const errorMessage = error.message || "An unexpected error occurred. Please try again.";
-      
-      setFeedbackMessage({ 
-        type: "error", 
-        message: errorMessage
-      });
-    } finally {
-      setIsSubmitting(false);
+      setErrors({ login: error.message });
     }
   };
 
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    const validationResult = validateUserData(userData);
-    setErrors(validationResult.errors);
-    
-    // Don't proceed if there are validation errors
-    if (Object.keys(validationResult.errors).length > 0) {
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setFeedbackMessage({ type: "", message: "" });
-    
-    try {
-      // Transform userData to match the expected format by the backend
-      const registrationData = {
-        // Use the field names that match the backend requirements
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        email: userData.email,
-        password: userData.password,
-        phone_number: userData.phoneNumber,
-        id_number: userData.idNumber,
-        address: userData.address,
-        cpNumber: userData.cpNumber || undefined
-      };
-      
-      console.log('Submitting registration data:', { 
-        ...registrationData, 
-        password: '********' 
-      });
-      
-      const result = await register(registrationData);
-      
-      if (result.success) {
-        setFeedbackMessage({
-          type: "success",
-          message: "Registration successful! You can now login."
-        });
-        
-        // Clear the form
-        setUserData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          phoneNumber: "",
-          idNumber: "",
-          address: "",
-          password: "",
-        });
-        
-        // Switch to login tab after a short delay
-        setTimeout(() => {
-          setActiveTab("login");
-        }, 2000);
-      } else {
-        setFeedbackMessage({
-          type: "error",
-          message: result.error || "Registration failed. Please try again."
-        });
-      }
-    } catch (error) {
-      setFeedbackMessage({
-        type: "error",
-        message: "An unexpected error occurred. Please try again."
-      });
-      console.error("Registration error:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Handle login form input changes
+  const handleLoginInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
@@ -234,21 +149,14 @@ export default function UserAuth() {
           className={`auth-form-container ${activeTab !== "login" ? "hidden" : ""}`}
         >
           <h1 className="auth-title">Member Login</h1>
-          
-          {(feedbackMessage.message || error) && activeTab === "login" && (
-            <div className={`auth-feedback ${feedbackMessage.type || "error"}`}>
-              {feedbackMessage.message || error}
-            </div>
-          )}
-          
-          <form id="loginForm" className="auth-form" onSubmit={handleLoginSubmit}>
+          <form id="loginForm" className="auth-form" onSubmit={handleLogin}>
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
+              <label htmlFor="loginEmail" className="form-label">
                 Email
               </label>
               <input
                 type="email"
-                id="email"
+                id="loginEmail"
                 name="email"
                 className="form-control"
                 placeholder="Enter your email"
@@ -259,26 +167,27 @@ export default function UserAuth() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="cpNumber" className="form-label">
+              <label htmlFor="cpdNumber" className="form-label">
                 CP / CPD Number
               </label>
               <input
                 type="text"
-                id="cpNumber"
-                name="cpNumber"
+                id="cpdNumber"
+                name="cpdNumber"
                 className="form-control"
-                placeholder="Enter your CP/CPD number (if applicable)"
-                value={loginData.cpNumber}
+                placeholder="Enter your CP/CPD number"
+                value={loginData.cpdNumber}
                 onChange={handleLoginInputChange}
+                required
               />
             </div>
             <div className="form-group">
-              <label htmlFor="password" className="form-label">
+              <label htmlFor="loginPassword" className="form-label">
                 Password
               </label>
               <input
                 type="password"
-                id="password"
+                id="loginPassword"
                 name="password"
                 className="form-control"
                 placeholder="Enter your password"
@@ -288,17 +197,21 @@ export default function UserAuth() {
                 autoComplete="current-password"
               />
             </div>
-            <button 
-              type="submit" 
-              className="btn btn-primary auth-btn"
-              disabled={isSubmitting || loading}
-            >
-              {isSubmitting || loading ? "Logging in..." : "Login"}
+            {errors.login && (
+              <div className="error-message">{errors.login}</div>
+            )}
+            <button type="submit" className="btn btn-primary auth-btn">
+              Login
             </button>
           </form>
           <div className="auth-links">
-            <button className="forgot-password">
-              Forgot Password?
+            <button
+              type="button" // Add type="button" to prevent form submission
+              onClick={handleClick}
+              className="auth-link-btn"
+              style={{ cursor: "pointer" }}
+            >
+              Click here
             </button>
           </div>
         </div>
@@ -309,14 +222,7 @@ export default function UserAuth() {
           className={`auth-form-container ${activeTab !== "register" ? "hidden" : ""}`}
         >
           <h1 className="auth-title">Member Registration</h1>
-          
-          {(feedbackMessage.message || error) && activeTab === "register" && (
-            <div className={`auth-feedback ${feedbackMessage.type || "error"}`}>
-              {feedbackMessage.message || error}
-            </div>
-          )}
-          
-          <form id="registerForm" className="auth-form" onSubmit={handleRegisterSubmit}>
+          <form id="registerForm" className="auth-form" onSubmit={handleSubmit}>
             {/* First Name Field */}
             <div className="form-group">
               <label htmlFor="firstName" className="form-label">
@@ -333,42 +239,18 @@ export default function UserAuth() {
                 required
               />
               {errors.firstName && (
-                <div className="error-message" ref={el => errorRefs.current.firstName = el}>
-                  {errors.firstName}
-                </div>
-              )}
-            </div>
-
-            {/* Last Name Field */}
-            <div className="form-group">
-              <label htmlFor="lastName" className="form-label">
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                className={`form-control ${errors.lastName ? "error" : ""}`}
-                placeholder="Enter your last name"
-                value={userData.lastName}
-                onChange={handleInputChange}
-                required
-              />
-              {errors.lastName && (
-                <div className="error-message" ref={el => errorRefs.current.lastName = el}>
-                  {errors.lastName}
-                </div>
+                <div className="error-message">{errors.firstName}</div>
               )}
             </div>
 
             {/* Email Field */}
             <div className="form-group">
-              <label htmlFor="regEmail" className="form-label">
+              <label htmlFor="registerEmail" className="form-label">
                 Email
               </label>
               <input
                 type="email"
-                id="regEmail"
+                id="registerEmail"
                 name="email"
                 className={`form-control ${errors.email ? "error" : ""}`}
                 placeholder="Enter your email"
@@ -377,9 +259,7 @@ export default function UserAuth() {
                 required
               />
               {errors.email && (
-                <div className="error-message" ref={el => errorRefs.current.email = el}>
-                  {errors.email}
-                </div>
+                <div className="error-message">{errors.email}</div>
               )}
             </div>
 
@@ -399,9 +279,7 @@ export default function UserAuth() {
                 required
               />
               {errors.phoneNumber && (
-                <div className="error-message" ref={el => errorRefs.current.phoneNumber = el}>
-                  {errors.phoneNumber}
-                </div>
+                <div className="error-message">{errors.phoneNumber}</div>
               )}
             </div>
 
@@ -421,9 +299,7 @@ export default function UserAuth() {
                 required
               />
               {errors.idNumber && (
-                <div className="error-message" ref={el => errorRefs.current.idNumber = el}>
-                  {errors.idNumber}
-                </div>
+                <div className="error-message">{errors.idNumber}</div>
               )}
             </div>
 
@@ -442,20 +318,18 @@ export default function UserAuth() {
                 required
               ></textarea>
               {errors.address && (
-                <div className="error-message" ref={el => errorRefs.current.address = el}>
-                  {errors.address}
-                </div>
+                <div className="error-message">{errors.address}</div>
               )}
             </div>
 
             {/* Password Field */}
             <div className="form-group">
-              <label htmlFor="regPassword" className="form-label">
+              <label htmlFor="registerPassword" className="form-label">
                 Password
               </label>
               <input
                 type="password"
-                id="regPassword"
+                id="registerPassword"
                 name="password"
                 className={`form-control ${errors.password ? "error" : ""}`}
                 placeholder="Enter your password"
@@ -464,19 +338,13 @@ export default function UserAuth() {
                 required
               />
               {errors.password && (
-                <div className="error-message" ref={el => errorRefs.current.password = el}>
-                  {errors.password}
-                </div>
+                <div className="error-message">{errors.password}</div>
               )}
             </div>
 
             {/* Submit Button */}
-            <button 
-              type="submit" 
-              className="btn btn-primary auth-btn"
-              disabled={isSubmitting || loading}
-            >
-              {isSubmitting || loading ? "Registering..." : "Register"}
+            <button type="submit" className="btn btn-primary auth-btn">
+              Register
             </button>
           </form>
         </div>

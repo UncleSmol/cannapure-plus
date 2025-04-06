@@ -67,7 +67,9 @@ app.use(cors({
     ];
     
     // Always allow in development
-    if (NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
+    if (NODE_ENV !== 'production') {
+      callback(null, true);
+    } else if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -83,22 +85,37 @@ app.use(cors({
     'Cache-Control', 
     'Accept', 
     'Origin',
-    'Access-Control-Allow-Origin'
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Credentials'
   ],
   exposedHeaders: [
     'X-API-Version', 
     'X-Response-Time', 
     'ETag', 
-    'Last-Modified'
+    'Last-Modified',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Credentials'
   ],
   maxAge: 86400 // Cache preflight requests for 24 hours
 }));
 
-// Enable pre-flight explicitly for auth endpoints
-app.options('/api/auth/login', cors());
-app.options('/api/auth/register', cors());
-app.options('/api/auth/refresh-token', cors());
-app.options('/api/auth/logout', cors());
+// Enable pre-flight explicitly for auth endpoints with proper CORS
+const authEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh-token', '/api/auth/logout'];
+authEndpoints.forEach(endpoint => {
+  app.options(endpoint, cors());
+  app.use(endpoint, (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    next();
+  });
+});
+
+// Body parsing middleware - MOVED EARLIER in the sequence
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Cookie parsing middleware
+app.use(cookieParser());
 
 // Enable pre-flight for all routes
 app.options('*', cors());
@@ -106,7 +123,7 @@ app.options('*', cors());
 // Apply the CORS debug middleware
 app.use(corsDebugMiddleware);
 
-// Special handling for auth routes
+// Special handling for auth routes - AFTER body parsing
 const authCorsMiddleware = require('./api/middleware/authCors');
 app.use('/api/auth', authCorsMiddleware);
 
@@ -128,13 +145,6 @@ app.get('/api/cors-test', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Cookie parsing middleware
-app.use(cookieParser());
 
 // Add cache monitoring response time middleware
 app.use(cacheMonitoring.createResponseTimeMiddleware());
@@ -159,7 +169,35 @@ app.use(responseMiddleware.addCacheHeaders({
   publicCache: process.env.NODE_ENV === 'production' // Public cache in production only
 }));
 
-// API routes
+// Add request logging middleware before routes
+app.use((req, res, next) => {
+  const requestId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  req.requestId = requestId;
+  
+  console.log(`[${requestId}] ${req.method} ${req.url}`, {
+    headers: req.headers,
+    query: req.query,
+    body: req.method !== 'GET' ? req.body : undefined
+  });
+
+  // Log response
+  const originalSend = res.send;
+  res.send = function(data) {
+    console.log(`[${requestId}] Response:`, {
+      status: res.statusCode,
+      headers: res.getHeaders(),
+      body: data?.substring?.(0, 200)
+    });
+    return originalSend.apply(res, arguments);
+  };
+
+  next();
+});
+
+// Remove duplicate static file serving
+app.use(express.static(path.join(__dirname, '..', 'build')));
+
+// Handle API routes first
 app.use('/api', apiRoutes);
 
 // Cache dashboard routes (admin only)
@@ -169,7 +207,7 @@ app.use('/api/cache',
   cacheDashboardRoutes
 );
 
-// Endpoint for testing status - specifically for frontend health checks
+// Testing endpoints
 app.get('/status', (req, res) => {
   res.status(200).json({ 
     status: 'ok', 
@@ -179,8 +217,8 @@ app.get('/status', (req, res) => {
   });
 });
 
-// Health check endpoint with enhanced cache information
-app.get('/api/health', (req, res) => {
+// API health check endpoint
+app.get('/api/health', async (req, res) => {
   // Get cache statistics
   const cacheStats = cacheService.getStats();
   const monitoringStats = cacheMonitoring.getMonitoringStats({ includeHistory: false });
@@ -225,22 +263,24 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Test endpoint
 app.get('/api/test', (req, res) => {
-  // Set CORS headers again for this specific endpoint
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
-  
   console.log('[API] Test endpoint accessed');
   res.status(200).json({ message: 'API is working!' });
 });
 
-// Serve static files from the build directory
-app.use(express.static(path.join(__dirname, '..', 'build')));
-
-// Catch-all route to serve the React app - This should be AFTER all API routes
-app.get('*', (req, res) => {
+// Serve index.html for all non-API routes to support client-side routing
+app.get('*', (req, res, next) => {
+  if (req.url.startsWith('/api')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+});
+
+// Handle 404s for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
 // Handle preflight OPTIONS requests for all routes
@@ -390,18 +430,31 @@ async function gracefulShutdown(signal) {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Start the server
-app.listen(PORT, async () => {
-  logger.info(`Server starting on port ${PORT} in ${NODE_ENV} mode`);
-  
-  // Verify authentication configuration
-  verifyAuthConfig();
-  logger.debug('Authentication configuration verified');
-  
-  // Initialize Phase 3 caching components
-  await initCachingComponents();
-  
-  logger.info(`Server running on port ${PORT}`);
-});
+// Start the server with port fallback
+const startServer = (port) => {
+  app.listen(port, async () => {
+    logger.info(`Server starting on port ${port} in ${NODE_ENV} mode`);
+    
+    // Verify authentication configuration
+    verifyAuthConfig();
+    logger.debug('Authentication configuration verified');
+    
+    // Initialize Phase 3 caching components
+    await initCachingComponents();
+    
+    logger.info(`Server running on port ${port}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.warn(`Port ${port} is busy, trying ${port + 1}`);
+      startServer(port + 1);
+    } else {
+      logger.error('Server failed to start:', err);
+      process.exit(1);
+    }
+  });
+};
+
+// Start server with initial port
+startServer(PORT);
 
 module.exports = app;

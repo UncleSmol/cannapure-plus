@@ -21,21 +21,42 @@ export const processApiResponse = (response) => {
 
 /**
  * Process raw strain data array and categorize it
- * @param {Array} strains - Array of strain objects
+ * @param {Array|Object} strains - Array of strain objects or pre-categorized object
  * @returns {Object} - Strains organized by category
  */
 export const processRawData = (strains) => {
-  if (!strains || !Array.isArray(strains)) {
-    console.error('Invalid strains data:', strains);
-    return {};
+  // If input is already categorized, validate and return it
+  if (strains && typeof strains === 'object' && !Array.isArray(strains)) {
+    const hasValidCategories = Object.values(strains).every(category => 
+      Array.isArray(category)
+    );
+    if (hasValidCategories) {
+      return strains;
+    }
   }
-  
+
+  // If input is not an array or is empty, log error and return empty categories
+  if (!Array.isArray(strains)) {
+    console.error('Invalid strains data:', strains);
+    return {
+      normal_strains: [],
+      greenhouse_strains: [],
+      exotic_tunnel_strains: [],
+      indoor_strains: [],
+      medical_strains: [],
+      pre_rolled: [],
+      extracts_vapes: [],
+      edibles: [],
+      weekly_special: []
+    };
+  }
+
   if (DEBUG_MODE) {
     // Log unique categories found in data
     const categories = [...new Set(strains.map(s => s.category))];
     console.log('Unique categories in data:', categories);
   }
-  
+
   // Create a case-insensitive test function for more flexible matching
   const categoryMatches = (strain, patterns) => {
     if (!strain || !strain.category) return false;
@@ -251,6 +272,6 @@ export const getWeeklySpecials = (allStrains, store, isLoading) => {
     taggedSpecials = randomSelections;
   }
 
-  // Limit number of specials to display
-  return taggedSpecials.slice(0, 12);
+  // Limit number of specials to display and ensure we return a valid array
+  return Array.isArray(taggedSpecials) ? taggedSpecials.slice(0, 12) : [];
 };

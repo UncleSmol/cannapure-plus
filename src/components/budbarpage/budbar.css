@@ -3,12 +3,18 @@
   height: 100svh;
   overflow: scroll;
   padding: var(--space-4);
+  margin-top: var(--header-height);
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.bud-bar-page::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 
 .bud-bar-top-controls {
   position: fixed;
   top: calc(var(--header-height) + var(--space-4));
-  margin-top: 50px;
   margin-bottom: 10px;
   right: var(--space-4);
   display: flex;
@@ -120,24 +126,15 @@
   overflow-x: auto;
   padding: var(--space-2);
   gap: var(--space-4);
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   padding-bottom: var(--space-4);
 }
 
 .weekly_specials_tag .__content-wrapper::-webkit-scrollbar {
-  height: 6px;
-}
-
-.weekly_specials_tag .__content-wrapper::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-full);
-}
-
-.weekly_specials_tag .__content-wrapper::-webkit-scrollbar-thumb {
-  background: var(--accent-green);
-  border-radius: var(--radius-full);
+  display: none;
 }
 
 /* Category Section Styling */
@@ -248,24 +245,15 @@
   overflow-x: auto;
   padding: var(--space-4);
   gap: var(--space-4);
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
 
 .category-section__card-holder::-webkit-scrollbar {
-  height: 6px;
-}
-
-.category-section__card-holder::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-full);
-}
-
-.category-section__card-holder::-webkit-scrollbar-thumb {
-  background: var(--accent-green);
-  border-radius: var(--radius-full);
+  display: none;
 }
 
 .category-section__card-holder.hidden {

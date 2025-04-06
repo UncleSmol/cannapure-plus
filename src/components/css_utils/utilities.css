@@ -67,8 +67,8 @@
 /* Glass Effects */
 .glass {
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
 }
 
@@ -97,9 +97,4 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-section{
-    background-color: var(--gradient-primary);
-    width: 100vw;
 }
