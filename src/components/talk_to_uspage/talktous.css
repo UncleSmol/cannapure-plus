@@ -1,4 +1,3 @@
-
 /* _talk-to-us.css */
 
 /* Talk To Us Page Container */
@@ -46,6 +45,7 @@
 /* Contact Method Card */
 .contact-method {
     background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
@@ -91,6 +91,7 @@
     color: var(--white);
     border-radius: var(--radius-full);
     transition: all var(--transition-normal);
+    text-decoration: none;
 }
 
 .contact-method__button:hover {
@@ -122,6 +123,7 @@
 
 .faq__item {
     background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
@@ -149,6 +151,7 @@
 /* Location Banner */
 .talk-to-us__location {
     background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);

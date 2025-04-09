@@ -1,0 +1,803 @@
+/* Base styles for the authentication page */
+.auth-page {
+  background-image: var(--gradient-primary);
+  min-height: 100svh;
+  overflow-y: auto;
+  padding: var(--space-4);
+  margin-top: var(--header-height);
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+}
+
+.auth-page::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Add a subtle animated background pattern */
+.auth-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1%, transparent 5%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 1%, transparent 5%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 1%, transparent 5%);
+  background-size: 60px 60px, 80px 80px, 100px 100px;
+  z-index: -1;
+  opacity: 0.4;
+  animation: subtleMovement 60s linear infinite;
+}
+
+@keyframes subtleMovement {
+  0% { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 100px 100px, -100px 100px, 100px -100px; }
+}
+
+.auth-page__content {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-4);
+  position: relative;
+  z-index: 1;
+  margin: var(--space-8) 0;
+}
+
+/* Title and description styles */
+.auth-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  color: var(--white);
+  text-align: center;
+  margin-bottom: var(--space-2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.auth-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background-color: var(--accent-green);
+  border-radius: var(--radius-full);
+}
+
+.auth-description {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  color: var(--white);
+  text-align: center;
+  margin-bottom: var(--space-6);
+  opacity: 0.9;
+  max-width: 80%;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+
+/* Form container with glass effect */
+.auth-form-container {
+  width: 100%;
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow:     0 8px 32px rgba(0, 0, 0, 0.2),    0 2px 8px rgba(0, 0, 0, 0.1) inset;
+  position: relative;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  min-height: 450px;
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  -ms-transition: all 0.3s ease;
+  -o-transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.auth-form-container:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.1) inset;
+  border-color: rgba(78, 163, 64, 0.3);
+}
+
+/* Form wrapper to handle proper positioning */
+.form-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+}
+
+/* Form styles */
+.auth-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: 
+    opacity 0.4s ease,
+    transform 0.4s ease;
+  will-change: opacity, transform;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form.visible {
+  opacity: 1;
+  z-index: 2;
+  transform: translateY(0) scale(1);
+  position: relative;
+}
+
+.auth-form.hidden {
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform: translateY(30px) scale(0.95);
+  position: absolute;
+}
+
+/* Form group styling */
+.form-group {
+  margin-bottom: var(--space-4);
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  color: var(--white);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+  font-weight: var(--weight-medium);
+  transition: all 0.3s ease;
+  opacity: 0.9;
+  transform-origin: left;
+}
+
+.form-group:focus-within label {
+  color: var(--accent-green);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.form-group input {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  transition: var(--input-transition);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) inset;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 
+    0 0 0 2px rgba(76, 175, 80, 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.1) inset;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  transition: opacity 0.3s ease;
+}
+
+.form-group input:focus::placeholder {
+  opacity: 0.7;
+}
+
+/* Button styling */
+.auth-button {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--accent-green);
+  color: var(--white);
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-top: var(--space-5);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.auth-button:hover {
+  background-color: var(--light-green);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.auth-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button ripple effect */
+.auth-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1) translate(-50%, -50%);
+  transform-origin: 0 0;
+}
+
+.auth-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    opacity: 1;
+    transform: scale(0) translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(20) translate(-50%, -50%);
+  }
+}
+
+/* Form toggle styling */
+.auth-form-toggle {
+  margin-top: var(--space-6);
+  text-align: center;
+  color: var(--white);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  position: relative;
+  padding-top: var(--space-4);
+}
+
+.auth-form-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  width: 50%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: var(--light-green);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: underline;
+  padding: 0 var(--space-1);
+  margin-left: var(--space-1);
+}
+
+.toggle-button:hover {
+  color: var(--white);
+  text-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.toggle-button:focus {
+  outline: none;
+  color: var(--white);
+}
+
+/* Error message styling */
+.error-message {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  text-align: center;
+  animation: errorShake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  position: relative;
+}
+
+.error-message::before {
+  content: '⚠️';
+  margin-right: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+@keyframes errorShake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* Enhanced feedback message styling */
+.feedback-message {
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) 0;
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  animation: slideIn 0.3s ease-out;
+  backdrop-filter: blur(8px);
+}
+
+.success-message {
+  background-color: rgba(46, 125, 50, 0.1);
+  border: 1px solid rgba(46, 125, 50, 0.3);
+  color: var(--accent-green);
+}
+
+.success-message::before {
+  content: '✓';
+  font-size: var(--text-lg);
+  color: var(--accent-green);
+}
+
+.error-message {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #ff6b6b;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Login form specific styles */
+.login-form {
+  min-height: 300px;
+}
+
+/* Register form specific styles */
+.register-form {
+  min-height: 440px; /* Taller to accommodate more fields */
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease forwards;
+}
+
+/* Form validation message styling */
+.validation-message {
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+  padding: var(--space-1) 0;
+  transition: all 0.3s ease;
+}
+
+.validation-message.error {
+  color: #ff6b6b;
+}
+
+.validation-message.valid {
+  color: var(--accent-green);
+}
+
+/* Error state for form groups */
+.form-group.error input,
+.form-group.error textarea {
+  border-color: rgba(220, 53, 69, 0.5);
+  box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.2);
+}
+
+.form-group.error label {
+  color: #ff6b6b;
+}
+
+/* Valid state for form groups - can be added if needed */
+.form-group.valid input,
+.form-group.valid textarea {
+  border-color: rgba(76, 175, 80, 0.5);
+  box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.2);
+}
+
+.form-group.valid label {
+  color: var(--accent-green);
+}
+
+/* Password strength indicator */
+.password-strength {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+  transition: all 0.3s ease;
+}
+
+.strength-label {
+  font-weight: var(--weight-medium);
+  margin-right: var(--space-1);
+}
+
+.password-strength.weak {
+  color: #ff6b6b;
+}
+
+.password-strength.medium {
+  color: #ffbb33;
+}
+
+.password-strength.strong {
+  color: var(--accent-green);
+}
+
+.strength-meter {
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-1);
+  overflow: hidden;
+}
+
+.strength-meter-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-meter-fill.weak {
+  width: 33%;
+  background-color: #ff6b6b;
+}
+
+.strength-meter-fill.medium {
+  width: 66%;
+  background-color: #ffbb33;
+}
+
+.strength-meter-fill.strong {
+  width: 100%;
+  background-color: var(--accent-green);
+}
+
+/* Animations for validation feedback */
+@keyframes validationAppear {
+  from { 
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.validation-message {
+  animation: validationAppear 0.3s ease forwards;
+}
+
+/* Focus styles for inputs with validation */
+.form-group.error input:focus,
+.form-group.error textarea:focus {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* Enhance the live validation experience with transition effects */
+.form-group input,
+.form-group textarea {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+/* Additional styles for password visibility toggle if needed */
+.password-toggle {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--medium-gray);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-base);
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.password-toggle:hover {
+  opacity: 1;
+}
+
+/* Ensure password field has padding for the toggle button */
+.form-group input[type="password"] {
+  padding-right: var(--space-8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auth-form-container {
+    padding: var(--space-4);
+  }
+  
+  .form-wrapper {
+    padding: 0;
+  }
+  
+  .auth-title {
+    font-size: var(--text-2xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page__content {
+    padding: var(--space-2);
+  }
+  
+  .auth-form-container {
+    padding: var(--space-3);
+  }
+  
+  .form-group {
+    margin-bottom: var(--space-3);
+  }
+  
+  .auth-title::after {
+    width: 30px;
+  }
+}
+
+/* Field Requirements Hints Styling */
+.field-requirements {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-2);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-primary);
+  font-size: var(--text-xs);
+  color: var(--white);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.field-requirements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-1);
+  padding: var(--space-1) 0;
+  transition: all 0.2s ease;
+}
+
+.requirement-item:last-child {
+  margin-bottom: 0;
+}
+
+.requirement-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  transition: all 0.2s ease;
+}
+
+.requirement-text {
+  flex: 1;
+  transition: color 0.2s ease;
+}
+
+/* Valid state */
+.requirement-item.valid {
+  color: var(--accent-green);
+}
+
+.requirement-item.valid .requirement-indicator {
+  color: var(--accent-green);
+  text-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
+}
+
+/* Invalid state */
+.requirement-item.invalid {
+  color: #ff6b6b;
+}
+
+.requirement-item.invalid .requirement-indicator {
+  color: #ff6b6b;
+}
+
+/* Default neutral state */
+.requirement-item:not(.valid):not(.invalid) {
+  color: var(--medium-gray);
+}
+
+/* Field requirement animations */
+@keyframes requirementFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.field-requirements {
+  animation: requirementFadeIn 0.3s ease-out;
+}
+
+/* Entry animations for each requirement item */
+.requirement-item {
+  opacity: 0;
+  animation: requirementFadeIn 0.3s ease-out forwards;
+}
+
+.requirement-item:nth-child(1) { animation-delay: 0.05s; }
+.requirement-item:nth-child(2) { animation-delay: 0.1s; }
+.requirement-item:nth-child(3) { animation-delay: 0.15s; }
+.requirement-item:nth-child(4) { animation-delay: 0.2s; }
+.requirement-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* Interactive hover effects */
+.requirement-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding-left: var(--space-1);
+  padding-right: var(--space-1);
+}
+
+/* Show requirements only when form field is focused or has content */
+.form-group:not(:focus-within) .field-requirements:not(.always-visible) {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+/* Additional visual emphasis when requirement is actively being validated */
+.requirement-item.validating {
+  transform: scale(1.02);
+  background-color: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+}
+
+/* Success validation flash animation */
+@keyframes validationSuccess {
+  0% { background-color: rgba(46, 125, 50, 0.2); }
+  100% { background-color: transparent; }
+}
+
+.requirement-item.valid {
+  animation: validationSuccess 0.5s ease;
+}
+
+/* Handle RTL layout if needed */
+[dir="rtl"] .requirement-indicator {
+  margin-right: 0;
+  margin-left: var(--space-2);
+}
+
+/* Responsive adjustments for field requirements */
+@media (max-width: 480px) {
+  .field-requirements {
+    padding: var(--space-1) var(--space-2);
+  }
+  
+  .requirement-item {
+    margin-bottom: var(--space-1);
+    padding: calc(var(--space-1) / 2) 0;
+  }
+  
+  .requirement-indicator {
+    width: 14px;
+    height: 14px;
+    margin-right: var(--space-1);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .field-requirements {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* High contrast mode support for accessibility */
+@media (forced-colors: active) {
+  .requirement-item.valid {
+    color: CanvasText;
+  }
+  
+  .requirement-item.invalid {
+    color: CanvasText;
+  }
+  
+  .requirement-indicator {
+    border: 1px solid currentColor;
+  }
+}
+
+/* Progressive enhancement for browsers with :has() support */
+@supports selector(:has(+ *)) {
+  .form-group:has(input:focus) .field-requirements {
+    opacity: 1;
+    max-height: 200px;
+    padding: var(--space-2) var(--space-3);
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+}

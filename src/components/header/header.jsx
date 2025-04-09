@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
+import { useAuth } from '../../context/AuthContext';
 import "./header.css";
 
 // Import the logo images directly
@@ -9,15 +10,17 @@ import signatureLogo from "../../sig/dev-doc-logo.svg";
 
 const Header = () => {
   const location = useLocation();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   
+  console.log('Auth state in header:', { isAuthenticated }); // Debug log
+
   // State management
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [logoLoaded, setLogoLoaded] = useState(false);
-  const [logoError, setLogoError] = useState(false);
   const [signatureLoaded, setSignatureLoaded] = useState(false);
-  const [signatureError, setSignatureError] = useState(false);
 
   // Refs
   const mobileNavRef = useRef(null);
@@ -28,15 +31,33 @@ const Header = () => {
   const logoRef = useRef(null);
   const signatureRef = useRef(null);
 
+  const handleAuthClick = async () => {
+    console.log('Auth button clicked, current state:', { isAuthenticated }); // Debug log
+
+    if (isAuthenticated) {
+      try {
+        console.log('Attempting logout...'); // Debug log
+        await logout();
+        console.log('Logout successful'); // Debug log
+        setMobileMenuOpen(false); // Close mobile menu after logout
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    } else {
+      navigate('/auth');
+      setMobileMenuOpen(false);
+    }
+  };
+
   const menuItems = [
     {
       name: "HOME",
-      icon: "https://www.svgrepo.com/show/535363/home.svg",
+      icon: "https://www.svgrepo.com/show/535437/home.svg",
       to: "/",
     },
     {
       name: "BUD BAR",
-      icon: "https://www.svgrepo.com/show/535344/flower.svg",
+      icon: "https://www.svgrepo.com/show/282812/cannabis-marijuana.svg",
       to: "/theBudBarPage",
     },
     {
@@ -49,6 +70,12 @@ const Header = () => {
       icon: "https://www.svgrepo.com/show/535320/comment-dots.svg",
       to: "/talkToUsPage",
     },
+    {
+      name: isAuthenticated ? "LOGOUT" : "LOGIN",
+      icon: "https://www.svgrepo.com/show/146318/user-login-button.svg",
+      isAuth: true,
+      onClick: handleAuthClick
+    }
   ];
 
   // Handle scroll behavior
@@ -139,12 +166,10 @@ const Header = () => {
   const handleLogoLoad = () => setLogoLoaded(true);
   const handleLogoError = () => {
     console.warn("Mobile logo image failed to load");
-    setLogoError(true);
   };
   const handleSignatureLoad = () => setSignatureLoaded(true);
   const handleSignatureError = () => {
     console.warn("Signature logo failed to load");
-    setSignatureError(true);
   };
 
   return (
@@ -205,17 +230,24 @@ const Header = () => {
                     location.pathname === item.to ? "active" : ""
                   }`}
                   ref={(el) => (menuItemsRef.current[index] = el)}
-                  onClick={handleNavItemClick}
+                  onClick={() => {
+                    if (item.onClick) {
+                      item.onClick();
+                    } else if (item.to) {
+                      navigate(item.to);
+                    }
+                    handleNavItemClick();
+                  }}
                 >
                   <div className="mobile-nav__icon-wrapper">
-                    <div className="mobile-nav__icon">
-                      <Link to={item.to}>
-                        <img src={item.icon} alt={`${item.name} Icon`} />
-                      </Link>
+                    <div className={`mobile-nav__icon ${item.isAuth && isAuthenticated ? 'logged-in' : ''}`}>
+                      <img 
+                        src={item.icon} 
+                        alt={`${item.name} Icon`} 
+                        style={{ transition: 'transform 0.3s ease' }}
+                      />
                     </div>
-                    <Link to={item.to} className="mobile-nav__text">
-                      {item.name}
-                    </Link>
+                    <span className="mobile-nav__text">{item.name}</span>
                   </div>
                 </li>
               ))}
@@ -251,6 +283,13 @@ const Header = () => {
             </div>
           </div>
         </div>
+
+        <button onClick={handleAuthClick} className="auth-link">
+          <span className={`auth-icon ${isAuthenticated ? 'logged-in' : ''}`}>
+            <i className="fas fa-user-circle"></i>
+          </span>
+          <span className="auth-text">{isAuthenticated ? 'LOGOUT' : 'LOGIN'}</span>
+        </button>
       </header>
     </>
   );

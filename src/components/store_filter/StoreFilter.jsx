@@ -12,7 +12,7 @@ import './StoreFilter.css';
  */
 const StoreFilter = ({ onFilterChange, onInteraction, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedStore, setSelectedStore] = useState('ALL');
+  const [selectedStore, setSelectedStore] = useState('SELECT STORE');
   const dropdownRef = useRef(null);
   
   // Close dropdown when clicking outside
@@ -29,7 +29,8 @@ const StoreFilter = ({ onFilterChange, onInteraction, className = "" }) => {
     };
   }, []);
 
-  const stores = ['ALL', 'WITBANK', 'DULLSTROOM'];
+  // Available store locations from database
+  const stores = ['SELECT STORE', 'WITBANK', 'DULLSTROOM'];
 
   // Notify parent about interaction
   const notifyInteraction = () => {
@@ -44,13 +45,22 @@ const StoreFilter = ({ onFilterChange, onInteraction, className = "" }) => {
   };
 
   const handleStoreSelect = (store) => {
-    const displayStore = store === 'ALL' ? 'ALL' : store;
-    const filterValue = store === 'ALL' ? '' : store;
+    const displayStore = store;
+    const filterValue = store === 'SELECT STORE' ? '' : store;
     
     setSelectedStore(displayStore);
     onFilterChange(filterValue);
     setIsOpen(false);
-    notifyInteraction();
+    onInteraction?.();
+  };
+
+  // Generate the display text based on the selected store
+  const getButtonText = () => {
+    if (selectedStore === 'SELECT STORE') {
+      return 'SELECT STORE';
+    } else {
+      return `${selectedStore} STORE`;
+    }
   };
 
   return (
@@ -66,7 +76,7 @@ const StoreFilter = ({ onFilterChange, onInteraction, className = "" }) => {
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        {selectedStore} STORE
+        {getButtonText()}
       </button>
       
       {isOpen && (

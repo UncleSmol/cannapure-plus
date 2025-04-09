@@ -13,6 +13,11 @@ const StrainCard = ({
 }) => {
   return (
     <div className={`strain-card ${isSpecial ? "special-card" : ""}`}>
+      {isSpecial && (
+        <div className="strain-card__hot-badge" title="Hot Pick">
+          🔥
+        </div>
+      )}
       <div className="strain-card__image-holder">
         {image ? (
           <img src={image} alt={name} className="strain-card__image" />

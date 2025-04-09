@@ -4,72 +4,15 @@ import "./budbar.css";
 import StrainCard from "../strain_card/StrainCard";
 import TopControls from "./components/TopControls";
 
-// Mock data grouped by category
-const mockStrainsByCategory = {
-  medical: [
-    { id: 1, name: "ACDC", type: "Hybrid", price: "170", description: "High CBD strain for pain relief" },
-    { id: 2, name: "Harlequin", type: "Sativa", price: "165", description: "Balanced CBD:THC for anxiety" },
-    { id: 3, name: "Charlotte's Web", type: "Indica", price: "175", description: "High CBD for therapeutic use" }
-  ],
-  edible: [
-    { id: 22, name: "Chocolate Kush Brownie", type: "Indica", price: "120", description: "Rich chocolate brownie with potent effects" },
-    { id: 23, name: "Sour Blue Raspberry Gummies", type: "Hybrid", price: "150", description: "Fruity gummies with balanced effects" },
-    { id: 24, name: "Mint Chocolate Chip Cookie", type: "Sativa", price: "130", description: "Refreshing mint cookie with uplifting effects" }
-  ],
-  extract: [
-    { id: 10, name: "Blue Dream Vape", type: "Hybrid", price: "300", description: "Premium distillate cartridge" },
-    { id: 11, name: "OG Kush Shatter", type: "Indica", price: "280", description: "Pure concentrate for dabbing" },
-    { id: 12, name: "Sour Diesel Live Resin", type: "Sativa", price: "320", description: "Full-spectrum extract" }
-  ],
-  pre_rolled: [
-    { id: 27, name: "Wedding Cake Pre-Roll", type: "Hybrid", price: "80", description: "Premium pre-rolled joint with sweet flavor" },
-    { id: 28, name: "Durban Poison Pre-Roll Pack", type: "Sativa", price: "220", description: "Pack of three energizing pre-rolls" },
-    { id: 29, name: "Granddaddy Purple King Size", type: "Indica", price: "100", description: "Extra-large pre-roll with relaxing effects" }
-  ],
-  indoor: [
-    { id: 4, name: "Wedding Cake", type: "Hybrid", price: "180", description: "Rich and tangy with relaxing effects" },
-    { id: 5, name: "Gelato", type: "Hybrid", price: "190", description: "Sweet and creamy with balanced effects" },
-    { id: 6, name: "GG4", type: "Hybrid", price: "185", description: "Diesel aroma with powerful effects" }
-  ],
-  greenhouse: [
-    { id: 13, name: "Lemon Haze", type: "Sativa", price: "150", description: "Citrus flavor with energetic effects" },
-    { id: 14, name: "Purple Kush", type: "Indica", price: "160", description: "Sweet grape flavor with deep relaxation" },
-    { id: 15, name: "Jack Herer", type: "Sativa", price: "155", description: "Pine-forward aroma with creative effects" }
-  ],
-  exotic: [
-    { id: 7, name: "Zkittlez", type: "Indica", price: "200", description: "Tropical fruit flavor with euphoric effects" },
-    { id: 8, name: "Runtz", type: "Hybrid", price: "210", description: "Sweet candy flavor with potent effects" },
-    { id: 9, name: "Ice Cream Cake", type: "Indica", price: "205", description: "Creamy vanilla with relaxing effects" }
-  ],
-  normal: [
-    { id: 16, name: "Blue Dream", type: "Hybrid", price: "120", description: "Sweet berry aroma with balanced effects" },
-    { id: 17, name: "Green Crack", type: "Sativa", price: "130", description: "Sharp energy and focus with tropical flavor" },
-    { id: 18, name: "Northern Lights", type: "Indica", price: "140", description: "Sweet and spicy with relaxing effects" }
-  ]
-};
-
-// Category descriptions
 const categoryDescriptions = {
-  medical: "High-CBD strains for therapeutic effects",
-  edible: "Cannabis-infused treats and snacks",
-  extract: "Concentrated cannabis products",
-  pre_rolled: "Ready-to-use pre-rolled joints",
-  indoor: "Premium indoor-grown flowers",
-  greenhouse: "Sun-grown cannabis varieties",
-  exotic: "Rare and unique strains",
-  normal: "Classic cannabis varieties"
-};
-
-// Updated category display names to match HOT PICKS style
-const categoryDisplayNames = {
-  medical: "WELLNESS REMEDIES",
-  edible: "TASTY TREATS",
-  extract: "PURE EXTRACTS",
-  pre_rolled: "READY TO ROLL",
-  indoor: "PREMIUM CRAFT",
-  greenhouse: "SUNSHINE GROWN",
-  exotic: "RARE FINDS",
-  normal: "CLASSIC HITS"
+  medical: "High-CBD strains and therapeutic cannabis products for wellness and relief",
+  edible: "Cannabis-infused treats, snacks and beverages for a delicious experience",
+  extract: "Premium concentrates, oils, and refined cannabis products",
+  pre_rolled: "Expertly crafted pre-rolled joints ready for enjoyment",
+  indoor: "Premium indoor-grown flowers cultivated in controlled environments",
+  greenhouse: "Sun-grown cannabis nurtured in optimal greenhouse conditions",
+  exotic: "Rare and unique strains for the cannabis connoisseur",
+  normal: "Classic, reliable strains beloved by enthusiasts"
 };
 
 export default function BudBarPage() {
@@ -78,10 +21,37 @@ export default function BudBarPage() {
   const specialsRef = useRef(null);
   const [openCategory, setOpenCategory] = useState(null);
   const [selectedStore, setSelectedStore] = useState('');
+  const [strainsByCategory, setStrainsByCategory] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Toggle category open/close
+  const scrollToCategory = (category) => {
+    const element = document.getElementById(`category-${category}`);
+    if (element) {
+      const headerHeight = parseInt(getComputedStyle(document.documentElement)
+        .getPropertyValue('--header-height'));
+      const topPadding = 20; // Extra padding below header
+      
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerHeight - topPadding;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const toggleCategory = (category) => {
-    setOpenCategory(openCategory === category ? null : category);
+    const isOpening = openCategory !== category;
+    setOpenCategory(isOpening ? category : null);
+    
+    if (isOpening) {
+      // Small delay to allow animation to start
+      setTimeout(() => scrollToCategory(category), 100);
+    }
   };
 
   // Add handlers for TopControls
@@ -89,9 +59,68 @@ export default function BudBarPage() {
     setSelectedStore(store);
   };
 
-  const handleRefreshData = () => {
-    // Will be implemented later with actual data fetching
-    console.log("Refreshing data...");
+  // Fetch data function - moved to separate function to reuse
+  const fetchStrains = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/strains');
+      const data = await response.json();
+      
+      const categorized = data.reduce((acc, strain) => {
+        if (!acc[strain.category]) {
+          acc[strain.category] = [];
+        }
+        acc[strain.category].push({
+          id: strain.id,
+          name: strain.strain_name,
+          type: strain.strain_type,
+          price: strain.price,
+          description: strain.description,
+          image: strain.image_url,
+          store_location: strain.store_location,
+        });
+        return acc;
+      }, {});
+
+      setStrainsByCategory(categorized);
+      return true;
+    } catch (err) {
+      console.error('Error fetching strains:', err);
+      setError('Failed to load products');
+      return false;
+    }
+  };
+
+  // Modified refresh handler
+  const handleRefreshData = async () => {
+    setIsRefreshing(true);
+    await fetchStrains();
+    setIsRefreshing(false);
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    setLoading(true);
+    fetchStrains().finally(() => setLoading(false));
+  }, []);
+
+  // Filter strains by selected store
+  const filterStrainsByStore = (strains) => {
+    if (!selectedStore) return []; // Return empty array if no store selected
+    return strains.filter(strain => strain.store_location === selectedStore);
+  };
+
+  // Get filtered strains for display
+  const getFilteredStrains = (category) => {
+    return filterStrainsByStore(strainsByCategory[category] || []);
+  };
+
+  // Get random strains from filtered results
+  const getRandomStrainsFromCategories = () => {
+    const allFilteredStrains = Object.values(strainsByCategory)
+      .flatMap(strains => filterStrainsByStore(strains));
+    
+    const shuffled = [...allFilteredStrains].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6); // Get 6 random strains for hot picks
   };
 
   useEffect(() => {
@@ -114,6 +143,13 @@ export default function BudBarPage() {
     );
   }, []);
 
+  if (loading || isRefreshing) return (
+    <div className="loading-overlay">
+      <div className="loading-spinner">Refreshing data...</div>
+    </div>
+  );
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <section className="bud-bar-page" ref={pageRef}>
       <TopControls
@@ -126,47 +162,68 @@ export default function BudBarPage() {
         <p className="lab-description">
           Check out what is hot on the shelves this week!
         </p>
-        
-        {/* Hot Picks Section */}
-        <div className="weekly_specials_tag" ref={specialsRef}>
-          <h2 className="section-title">HOT PICKS</h2>
-          <div className="__content-wrapper">
-            {mockStrainsByCategory.exotic.map(strain => (
-              <StrainCard key={strain.id} {...strain} isSpecial={false} />
-            ))}
-            <div className="scroll-spacer"></div>
-          </div>
-        </div>
 
-        {/* Main Categories Section */}
-        <h2 className="section-title">BROWSE BY CATEGORY</h2>
-        
-        {/* Individual Categories */}
-        {Object.entries(mockStrainsByCategory).map(([category, strains]) => (
-          <div 
-            key={category}
-            className={`category-section ${openCategory === category ? 'open' : 'closed'}`}
-          >
-            <h3 
-              className="category-section__heading"
-              onClick={() => toggleCategory(category)}
-            >
-              {category.toUpperCase().replace('_', ' ')}
-              <div className={`category-section__btn opn-cls-btn ${openCategory === category ? 'open' : ''}`}></div>
-            </h3>
-            
-            <p className="category-section__description">
-              {categoryDescriptions[category]}
-            </p>
-
-            <div className={`category-section__card-holder ${openCategory === category ? 'visible' : 'hidden'}`}>
-              {strains.map(strain => (
-                <StrainCard key={strain.id} {...strain} />
-              ))}
-              <div className="scroll-spacer"></div>
+        {selectedStore ? (
+          <>
+            {/* Hot Picks Section */}
+            <div className="weekly_specials_tag" ref={specialsRef}>
+              <h2 className="section-title">HOT PICKS</h2>
+              <div className="__content-wrapper">
+                {getRandomStrainsFromCategories().map(strain => (
+                  <StrainCard 
+                    key={`hotpick-${strain.id}`} 
+                    {...strain} 
+                    isSpecial={true}
+                  />
+                ))}
+                <div className="scroll-spacer"></div>
+              </div>
             </div>
+
+            {/* Main Categories Section */}
+            <h2 className="section-title">BROWSE BY CATEGORY</h2>
+            
+            {/* Individual Categories */}
+            {Object.entries(strainsByCategory).map(([category, _]) => {
+              const filteredStrains = getFilteredStrains(category);
+              if (filteredStrains.length === 0) return null;
+
+              return (
+                <div 
+                  id={`category-${category}`}
+                  key={category} 
+                  className={`category-section ${openCategory === category ? 'open' : 'closed'}`}
+                >
+                  <h3 
+                    className="category-section__heading"
+                    onClick={() => toggleCategory(category)}
+                  >
+                    {category.toUpperCase().replace('_', ' ')}
+                    <span className="category-count">
+                      ({filteredStrains.length})
+                    </span>
+                    <div className={`category-section__btn opn-cls-btn ${openCategory === category ? 'open' : ''}`}></div>
+                  </h3>
+
+                  <p className="category-section__description">
+                    {categoryDescriptions[category]}
+                  </p>
+
+                  <div className={`category-section__card-holder ${openCategory === category ? 'visible' : 'hidden'}`}>
+                    {filteredStrains.map(strain => (
+                      <StrainCard key={strain.id} {...strain} />
+                    ))}
+                    <div className="scroll-spacer"></div>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <div className="store-select-message">
+            Please select a store location to view available products
           </div>
-        ))}
+        )}
       </div>
     </section>
   );

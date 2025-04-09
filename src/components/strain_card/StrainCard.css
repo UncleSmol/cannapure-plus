@@ -228,7 +228,7 @@
 }
 
 .special-card::before {
-    content: 'SPECIAL';
+    content: '';
     position: absolute;
     top: 20px;
     right: -35px;
@@ -239,11 +239,12 @@
     font-size: var(--text-xs);
     font-weight: var(--weight-bold);
     letter-spacing: 0.1em;
-    z-index: 1;
+    z-index: -1;
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     -o-transform: rotate(45deg);
+    display: none;
 }
 
 /* Card Loading State - Updated */
@@ -506,4 +507,26 @@
     padding: var(--space-2) var(--space-4);
     transition: background-color var(--transition-fast);
     cursor: pointer;
+}
+
+/* Hot Badge */
+.strain-card__hot-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.2rem;
+  z-index: 2;
+  animation: glow 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 5px #ff4d4d);
+}
+
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px #ff4d4d);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 15px #ff9933);
+    transform: scale(1.1);
+  }
 }

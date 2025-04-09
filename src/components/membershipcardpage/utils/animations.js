@@ -6,26 +6,30 @@ import { gsap } from "gsap";
  * @param {Object} refs - Object containing refs to DOM elements
  * @param {Object} refs.cardRef - Reference to the card element
  * @param {Object} refs.badgeRef - Reference to the badge element
- * @returns {Function|void} Cleanup function for event listeners (if applicable)
+ * @returns {Function} Cleanup function for animations and event listeners
  */
 export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
-  if (!cardRef.current) return;
+  if (!cardRef?.current) return () => {}; // Return empty function if no card ref
 
-   // Ensure card is visible
-   gsap.set(cardRef.current, { opacity: 1 });
+  // Ensure card is visible
+  gsap.set(cardRef.current, { opacity: 1 });
   
   // Create timeline for animations
   const tierTimeline = gsap.timeline({ repeat: -1 });
   
   // Clear any existing animations on the elements
   gsap.killTweensOf(cardRef.current);
-  if (badgeRef.current) {
+  if (badgeRef?.current) {
     gsap.killTweensOf(badgeRef.current);
   }
   
   // Remove any previously added shine effects
   const existingShineEffects = cardRef.current.querySelectorAll('.shine-effect');
   existingShineEffects.forEach(el => el.remove());
+  
+  // Store event handlers for cleanup
+  let handleMouseMove;
+  let handleMouseLeave;
   
   switch(tier) {
     case "gold":
@@ -43,7 +47,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
         });
       
       // Badge glow
-      if (badgeRef.current) {
+      if (badgeRef?.current) {
         gsap.to(badgeRef.current, {
           filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.7))",
           repeat: -1,
@@ -92,7 +96,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
       });
       
       // Badge subtle rotation
-      if (badgeRef.current) {
+      if (badgeRef?.current) {
         gsap.to(badgeRef.current, {
           rotation: 10,
           duration: 2,
@@ -120,7 +124,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
         });
       
       // Badge pulse
-      if (badgeRef.current) {
+      if (badgeRef?.current) {
         gsap.to(badgeRef.current, {
           scale: 1.1,
           duration: 1.5,
@@ -137,7 +141,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
       // Card subtle rotation on mouse move
       const card = cardRef.current;
       
-      const handleMouseMove = (e) => {
+      handleMouseMove = (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left; // x position within the element
         const y = e.clientY - rect.top; // y position within the element
@@ -156,7 +160,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
         });
       };
       
-      const handleMouseLeave = () => {
+      handleMouseLeave = () => {
         gsap.to(card, {
           rotationY: 0,
           rotationX: 0,
@@ -197,7 +201,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
       }
       
       // Badge rotation
-      if (badgeRef.current) {
+      if (badgeRef?.current) {
         gsap.to(badgeRef.current, {
           rotation: 360,
           duration: 10,
@@ -205,12 +209,7 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
           ease: "none"
         });
       }
-      
-      // Cleanup function to remove event listeners
-      return () => {
-        card.removeEventListener("mousemove", handleMouseMove);
-        card.removeEventListener("mouseleave", handleMouseLeave);
-      };
+      break;
       
     default:
       // Basic tier - subtle pulse
@@ -227,12 +226,40 @@ export const applyTierAnimations = (tier, { cardRef, badgeRef }) => {
         });
   }
   
-  return tierTimeline;
+  // Return a unified cleanup function for all tiers
+  return () => {
+    // Kill any remaining GSAP animations
+    if (cardRef?.current) {
+      gsap.killTweensOf(cardRef.current);
+    }
+    
+    if (badgeRef?.current) {
+      gsap.killTweensOf(badgeRef.current);
+    }
+    
+    // Kill timeline
+    if (tierTimeline) {
+      tierTimeline.kill();
+    }
+    
+    // Remove event listeners for Tropez tier
+    if (handleMouseMove && handleMouseLeave && cardRef?.current) {
+      cardRef.current.removeEventListener("mousemove", handleMouseMove);
+      cardRef.current.removeEventListener("mouseleave", handleMouseLeave);
+    }
+    
+    // Remove any shine effects
+    if (cardRef?.current) {
+      const existingShineEffects = cardRef.current.querySelectorAll('.shine-effect');
+      existingShineEffects.forEach(el => el.remove());
+    }
+  };
 };
 
 /**
  * Applies entrance animations to the membership card and its elements
  * @param {Object} refs - Object containing refs to DOM elements
+ * @returns {Function} Cleanup function for entrance animations
  */
 export const applyEntranceAnimations = (refs) => {
   const { 
@@ -250,14 +277,16 @@ export const applyEntranceAnimations = (refs) => {
   const cardTimeline = gsap.timeline();
   
   // Page fade in
-  gsap.fromTo(
-    pageRef.current,
-    { opacity: 0 },
-    { opacity: 1, duration: 0.6, ease: "power2.out" }
-  );
+  if (pageRef?.current) {
+    gsap.fromTo(
+      pageRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.6, ease: "power2.out" }
+    );
+  }
   
   // Close button animation
-  if (closeButtonRef.current) {
+  if (closeButtonRef?.current) {
     gsap.fromTo(
       closeButtonRef.current,
       { opacity: 0, scale: 0.5 },
@@ -266,7 +295,7 @@ export const applyEntranceAnimations = (refs) => {
   }
   
   // Card entrance animation
-  if (cardRef.current) {
+  if (cardRef?.current) {
     cardTimeline
       .fromTo(
         cardRef.current,
@@ -276,7 +305,7 @@ export const applyEntranceAnimations = (refs) => {
         } }
       );
     
-    if (logoRef.current) {
+    if (logoRef?.current) {
       cardTimeline.fromTo(
         logoRef.current,
         { opacity: 0, scale: 0.5 },
@@ -285,7 +314,7 @@ export const applyEntranceAnimations = (refs) => {
       );
     }
     
-    if (badgeRef.current) {
+    if (badgeRef?.current) {
       cardTimeline.fromTo(
         badgeRef.current,
         { opacity: 0, scale: 0.5 },
@@ -294,7 +323,7 @@ export const applyEntranceAnimations = (refs) => {
       );
     }
     
-    if (userInfoRef.current) {
+    if (userInfoRef?.current) {
       cardTimeline.fromTo(
         userInfoRef.current,
         { opacity: 0, y: 20 },
@@ -303,7 +332,7 @@ export const applyEntranceAnimations = (refs) => {
       );
     }
     
-    if (tierInfoRef.current) {
+    if (tierInfoRef?.current) {
       cardTimeline.fromTo(
         tierInfoRef.current,
         { opacity: 0, y: 10 },
@@ -313,7 +342,7 @@ export const applyEntranceAnimations = (refs) => {
     }
     
     // Info panels animation
-    if (infoPanelsRef.current) {
+    if (infoPanelsRef?.current) {
       cardTimeline.fromTo(
         infoPanelsRef.current.children,
         { opacity: 0, y: 20 },
@@ -329,7 +358,13 @@ export const applyEntranceAnimations = (refs) => {
     }
   }
   
-  return cardTimeline;
+  // Return a cleanup function
+  return () => {
+    // Clean up entrance animations
+    if (cardTimeline) {
+      cardTimeline.kill();
+    }
+  };
 };
 
 /**
@@ -338,7 +373,7 @@ export const applyEntranceAnimations = (refs) => {
  * @param {Function} onComplete - Function to call when animation completes
  */
 export const animateCardClose = (cardRef, onComplete = () => {}) => {
-  if (cardRef.current) {
+  if (cardRef?.current) {
     gsap.to(cardRef.current, {
       opacity: 0,
       y: 30,
