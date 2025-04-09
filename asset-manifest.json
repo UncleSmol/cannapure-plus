@@ -1,21 +1,19 @@
 {
   "files": {
-    "main.css": "/cannapure-plus/static/css/main.507c816f.css",
-    "main.js": "/cannapure-plus/static/js/main.a8869edd.js",
+    "main.css": "/cannapure-plus/static/css/main.88e65237.css",
+    "main.js": "/cannapure-plus/static/js/main.a81ccc52.js",
+    "static/media/clipboard-image-4.png": "/cannapure-plus/static/media/clipboard-image-4.7e4d68a1b472ce7933b9.png",
     "static/media/cannabis-leaf.png": "/cannapure-plus/static/media/cannabis-leaf.a8c6783f412b9e51c311.png",
-    "static/media/logo.svg": "/cannapure-plus/static/media/logo.6e5170edd34984351f3b.svg",
     "static/media/cannapure-plus-logo.png": "/cannapure-plus/static/media/cannapure-plus-logo.2ee83188b46ed2963c50.png",
-    "static/media/diamond-badge.png": "/cannapure-plus/static/media/diamond-badge.2ee83188b46ed2963c50.png",
-    "static/media/emerald-badge.png": "/cannapure-plus/static/media/emerald-badge.2ee83188b46ed2963c50.png",
-    "static/media/gold-badge.png": "/cannapure-plus/static/media/gold-badge.2ee83188b46ed2963c50.png",
-    "static/media/tropez-badge.png": "/cannapure-plus/static/media/tropez-badge.2ee83188b46ed2963c50.png",
-    "static/media/clipboard-image-4.png": "/cannapure-plus/static/media/clipboard-image-4.96d351a38d2f495605f1.png",
+    "static/media/dev-doc-logo.svg": "/cannapure-plus/static/media/dev-doc-logo.de797792e2f0976ba27c3a47cbad631e.svg",
+    "static/media/diamond-badge.png": "/cannapure-plus/static/media/diamond-badge.f8bb9f0104be7300fd50.png",
+    "static/media/tropez-badge.png": "/cannapure-plus/static/media/tropez-badge.926658a8148adcabddca.png",
     "index.html": "/cannapure-plus/index.html",
-    "main.507c816f.css.map": "/cannapure-plus/static/css/main.507c816f.css.map",
-    "main.a8869edd.js.map": "/cannapure-plus/static/js/main.a8869edd.js.map"
+    "main.88e65237.css.map": "/cannapure-plus/static/css/main.88e65237.css.map",
+    "main.a81ccc52.js.map": "/cannapure-plus/static/js/main.a81ccc52.js.map"
   },
   "entrypoints": [
-    "static/css/main.507c816f.css",
-    "static/js/main.a8869edd.js"
+    "static/css/main.88e65237.css",
+    "static/js/main.a81ccc52.js"
   ]
 }
